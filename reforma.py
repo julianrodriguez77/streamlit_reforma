@@ -1,24 +1,19 @@
-import subprocess
-
-# Instalar dependencias desde requirements.txt
-subprocess.run(["pip", "install", "-r", "requirements.txt"], check=True)
-
-#import os
-#import streamlit as st
-#import pandas as pd
-#from streamlit_aggrid import st_aggrid
-#from st_aggrid import JsCode, AgGrid, GridOptionsBuilder,GridUpdateMode, DataReturnMode
-#import matplotlib.pyplot as plt
-#from fpdf import FPDF
-#import base64
-#import numpy as np
-#from tempfile import NamedTemporaryFile
-#from sklearn.datasets import load_iris
-#from datetime import datetime
-#import hydralit_components as hc
-#from PIL import Image
-#import gspread
-#import state
+import os
+import streamlit as st
+import pandas as pd
+from streamlit_aggrid import st_aggrid
+from st_aggrid import JsCode, AgGrid, GridOptionsBuilder,GridUpdateMode, DataReturnMode
+import matplotlib.pyplot as plt
+from fpdf import FPDF
+import base64
+import numpy as np
+from tempfile import NamedTemporaryFile
+from sklearn.datasets import load_iris
+from datetime import datetime
+import hydralit_components as hc
+from PIL import Image
+import gspread
+import state
 
 
 #para que reconosca la tabla xlsx
