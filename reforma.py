@@ -1,5 +1,4 @@
 import os
-import gspread
 import streamlit as st
 import pandas as pd
 #from streamlit_aggrid import st_aggrid
@@ -13,6 +12,7 @@ from sklearn.datasets import load_iris
 from datetime import datetime
 import hydralit_components as hc
 from PIL import Image
+import gspread
 #import state
 
 
