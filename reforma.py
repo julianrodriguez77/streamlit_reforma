@@ -501,9 +501,9 @@ def Externa():
     #wks = sh.get_worksheet(0)
     #mts = mt.get_worksheet(0)
     #para editar
-    odoo = pd.read_excel("tabla_presupuesto.xlsx")
+    odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')
     #odoo = wks.get_all_records()
-    metas = pd.read_excel("tabla_metas.xlsx")
+    metas = pd.read_excel("tabla_metas.xlsx", engine='openpyxl')
     #metas = mts.get_all_records()
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
@@ -1521,8 +1521,7 @@ if contrasena == contrasena_correcta:
     df_metas = pd.DataFrame(metas)
 
     st.sidebar.success("Contraseña correcta. ¡Bienvenido!")
-    df_odoo.to_excel('tabla_presupuesto.xlsx', index= False)
-    df_metas.to_excel('tabla_metas.xlsx', index= False)
+    df_odoo.to_excel('tabla_presupuesto.xlsx', index= False, engine='openpyxl')
+    df_metas.to_excel('tabla_metas.xlsx', index= False, engine='openpyxl')
 else:
     st.sidebar.error("Contraseña incorrecta. Acceso denegado.")
-
