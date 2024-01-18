@@ -7,7 +7,6 @@ from fpdf import FPDF
 import base64
 import numpy as np
 from tempfile import NamedTemporaryFile
-from sklearn.datasets import load_iris
 from datetime import datetime
 import hydralit_components as hc
 from PIL import Image
