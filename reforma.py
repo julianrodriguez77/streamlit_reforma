@@ -1484,7 +1484,7 @@ page_names_to_funcs = {
 #""", unsafe_allow_html=True)
 
 
-odoo = pd.read_excel("tabla_presupuesto.xlsx")        
+odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')        
 df_odoo = pd.DataFrame(odoo)
 FECHA = df_odoo.iloc[2]["Fecha"]
 st.sidebar.image('logo GadPP.png', caption='Unidad de Planificación')
