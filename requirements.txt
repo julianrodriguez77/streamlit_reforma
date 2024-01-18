@@ -10,5 +10,5 @@ streamlit==1.28.2
 streamlit-aggrid==0.3.4.post3
 streamlit-elements==0.1.0
 streamlit-state==0.1.0
-openpyxl==3.0.14
+openpyxl
 pip
