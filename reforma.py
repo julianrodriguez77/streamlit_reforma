@@ -11,7 +11,6 @@ from datetime import datetime
 import hydralit_components as hc
 from PIL import Image
 import gspread
-import state
 
 
 #para que reconosca la tabla xlsx
