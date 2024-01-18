@@ -205,18 +205,10 @@ def Inicio():
 
 def Interna():
     def main():
-        #para conectar a google drive
-        #gc = gspread.service_account(filename= 'reformas-402915-4d33dedfb202.json')
-        #abrir el archivo de drive
-        #sh = gc.open('reforma')
-        #mt = gc.open('REFORMA_POA')
-        #la hoja de sheets
-        #wks = sh.get_worksheet(0)
-        #mts = mt.get_worksheet(0)
-        #para editar
-        odoo = pd.read_excel("tabla_presupuesto.xlsx")
+        
+        odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')
         #odoo = wks.get_all_records()
-        metas = pd.read_excel("tabla_metas.xlsx")
+        metas = pd.read_excel("tabla_metas.xlsx", engine='openpyxl')
         #metas = mts.get_all_records()
         #odoo = [{k: v.encode('utf-8') if isinstance(v, str) else v for k, v in row.items()} for row in odoo]
 
