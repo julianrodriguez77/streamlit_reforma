@@ -531,7 +531,7 @@ def Externa():
     st.title('')
     st.markdown(f"<h3 >Tabla de Presupuestos</h3>", unsafe_allow_html=True)
     gb = GridOptionsBuilder.from_dataframe(df) 
-    gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
+    gb.configure_column('Unidad', hide=True)
     gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura')
     gb.configure_column('Codificado', header_name = "Codificado", aggFunc='sum')
