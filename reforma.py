@@ -1,7 +1,6 @@
 import os
 import streamlit as st
 import pandas as pd
-from streamlit_aggrid import st_aggrid
 from st_aggrid import JsCode, AgGrid, GridOptionsBuilder,GridUpdateMode, DataReturnMode
 import matplotlib.pyplot as plt
 from fpdf import FPDF
