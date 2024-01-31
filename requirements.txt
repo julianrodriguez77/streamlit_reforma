@@ -12,4 +12,4 @@ streamlit-elements==0.1.0
 streamlit-state==0.1.0
 openpyxl
 pip
-module_name
+xlsxwriter
