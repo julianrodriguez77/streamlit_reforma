@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 from datetime import datetime
 import hydralit_components as hc
 from PIL import Image
+from io import BytesIO
 import gspread
 
 
@@ -25,7 +26,6 @@ st.set_page_config(page_title= 'Reformas CPI',
 def create_download_link(val, filename):
     b64 = base64.b64encode(val)  
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
-
 # Para la seccion 1 y 2
 def agregar_columnas(df):
     df['Movimiento'] = 0
@@ -38,11 +38,6 @@ def agregar_column(dfd):
     return dfd
 
 def Inicio():
-    #left_co, cent_co,last_co = st.columns(3)
-    #with cent_co:
-        #st.image(logo)
-    #st.image("P_Invencible.png")
-    #st.markdown("<h1 style='text-aling: center'> Reformas : </h1>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; background-color: #000045; color: #ece5f6'>Unidad DE PLANIFICACIÓN</h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #000045; color: #ece5f6'>Sistema de reformas</h4>", unsafe_allow_html=True)
     menu_data = [
@@ -98,7 +93,7 @@ def Inicio():
         st.markdown("""
                     **Interna**
 
-                    En esta sección las reformas/movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
+                    En esta sección las reformas/Movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
                     Es decir, se puede modificar los proyectos sumando y restando el codificado o cambiar el nombre de las metas en la Unidad seleccionada.
                     Una ves modificado los valores y metas deseadas se procede a guardar la información esto generara automaticamente un archivo pdf con un codigo y con información de las 
                     modificaciones realizadas ya sea solo codificado, metas o los 2.
@@ -111,11 +106,11 @@ def Inicio():
                 💡 **Pasos para realizar una reforma interna**
                     
                 - Selecione la `Unidad` en la cual desea realizar las modificaciones, aparecera 2 tablas con la información de la Unidad: `Presupuesto` y `Metas`. 
-                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
+                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `Movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
                 - En la segunda tabla `Metas` se pueden realizar modificaciones a la ultima meta registrada, en la columna `nueva meta` se ingresa el nombre de la nueva meta.
-                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de movimiento simpre debe ser cero.
+                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `Movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de Movimiento simpre debe ser cero.
                 - El boton de guardar información se activara si todo el proceso se encuentra bien realizado caso contrario no se podra descargar la informacion de los datos modificados.
-                - Se descarga un archivo pdf del movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
+                - Se descarga un archivo pdf del Movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
                 """)
                 #- Utilize dynamic tables to simplify data transformation and avoid complex pipeline management, making them ideal for materializing query results from multiple base tables in ETL processes.
     st.header("🌀 Reforma Externa", help="Reforma entre Unidades")
@@ -126,7 +121,7 @@ def Inicio():
         st.markdown("""
                     **Externa**
 
-                    En esta sección las reformas/movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
+                    En esta sección las reformas/Movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
                     Es decir, se puede modificar los proyectos sumando y restando el codificado o cambiar el nombre de las metas en la Unidad seleccionada.
                     Una ves modificado los valores y metas deseadas se procede a guardar la información esto generara automaticamente un archivo pdf con un codigo y con información de las 
                     modificaciones realizadas ya sea solo codificado, metas o los 2.
@@ -139,11 +134,11 @@ def Inicio():
                 💡 **Pasos para realizar una reforma externa**
                     
                 - Selecione la `Unidad` en la cual desea realizar las modificaciones, aparecera 2 tablas con la información de la Unidad: `Presupuesto` y `Metas`. 
-                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
+                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `Movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
                 - En la segunda tabla `Metas` se pueden realizar modificaciones a la ultima meta registrada, en la columna `nueva meta` se ingresa el nombre de la nueva meta.
-                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de movimiento simpre debe ser cero.
+                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `Movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de Movimiento simpre debe ser cero.
                 - El boton de guardar información se activara si todo el proceso se encuentra bien realizado caso contrario no se podra descargar la informacion de los datos modificados.
-                - Se descarga un archivo pdf del movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
+                - Se descarga un archivo pdf del Movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
                 """)
         
     st.header("➖ Liberación ", help="Reforma entre Unidades")
@@ -154,7 +149,7 @@ def Inicio():
         st.markdown("""
                     **Externa**
 
-                    En esta sección las reformas/movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
+                    En esta sección las reformas/Movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
                     Es decir, se puede modificar los proyectos sumando y restando el codificado o cambiar el nombre de las metas en la Unidad seleccionada.
                     Una ves modificado los valores y metas deseadas se procede a guardar la información esto generara automaticamente un archivo pdf con un codigo y con información de las 
                     modificaciones realizadas ya sea solo codificado, metas o los 2.
@@ -167,11 +162,11 @@ def Inicio():
                 💡 **Pasos para realizar una reforma externa**
                     
                 - Selecione la `Unidad` en la cual desea realizar las modificaciones, aparecera 2 tablas con la información de la Unidad: `Presupuesto` y `Metas`. 
-                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
+                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `Movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
                 - En la segunda tabla `Metas` se pueden realizar modificaciones a la ultima meta registrada, en la columna `nueva meta` se ingresa el nombre de la nueva meta.
-                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de movimiento simpre debe ser cero.
+                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `Movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de Movimiento simpre debe ser cero.
                 - El boton de guardar información se activara si todo el proceso se encuentra bien realizado caso contrario no se podra descargar la informacion de los datos modificados.
-                - Se descarga un archivo pdf del movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
+                - Se descarga un archivo pdf del Movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
                 """)
         
     st.header("➕ Solicitud", help="Reforma entre Unidades")
@@ -182,7 +177,7 @@ def Inicio():
         st.markdown("""
                     **Externa**
 
-                    En esta sección las reformas/movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
+                    En esta sección las reformas/Movimientos que se solicitan se realizaran unicamente entre la misma Unidad.
                     Es decir, se puede modificar los proyectos sumando y restando el codificado o cambiar el nombre de las metas en la Unidad seleccionada.
                     Una ves modificado los valores y metas deseadas se procede a guardar la información esto generara automaticamente un archivo pdf con un codigo y con información de las 
                     modificaciones realizadas ya sea solo codificado, metas o los 2.
@@ -195,52 +190,51 @@ def Inicio():
                 💡 **Pasos para realizar una reforma externa**
                     
                 - Selecione la `Unidad` en la cual desea realizar las modificaciones, aparecera 2 tablas con la información de la Unidad: `Presupuesto` y `Metas`. 
-                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
+                - En la primera tabla `Presupuesto` se puede editar los valores que afectan al `codificado`, con la columna `Movimiento` tomando muy en cuenta que se puede restar valores a las partidas unicamente que tengan `saldo diponible` y sumar el valor restado a cualquier partida deseada. 
                 - En la segunda tabla `Metas` se pueden realizar modificaciones a la ultima meta registrada, en la columna `nueva meta` se ingresa el nombre de la nueva meta.
-                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de movimiento simpre debe ser cero.
+                - En los widgets de la parte inferior tiene los totales del `codificado`, `nuevo codificado` y `Movimiento`. Esta información permite verificar que la información se a ingresado correctamente ya que el codificado debe tener el mismo valor y el valor de Movimiento simpre debe ser cero.
                 - El boton de guardar información se activara si todo el proceso se encuentra bien realizado caso contrario no se podra descargar la informacion de los datos modificados.
-                - Se descarga un archivo pdf del movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
+                - Se descarga un archivo pdf del Movimiento del presupuesto y de los cambios de las metas, si el documento se encuentra vacio es decir, que no se a realizado cambios sea en el presupuesto o en las metas.
                 """)
     
 
 def Interna():
     def main():
-        
-        odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')
-        #odoo = wks.get_all_records()
-        metas = pd.read_excel("tabla_metas.xlsx", engine='openpyxl')
-        #metas = mts.get_all_records()
-        #odoo = [{k: v.encode('utf-8') if isinstance(v, str) else v for k, v in row.items()} for row in odoo]
-
+        #CARGAMOS LAS BASES
+        odoo = pd.read_excel("tabla_presupuesto.xlsx")
+        metas = pd.read_excel("tabla_metas.xlsx")
         df_odoo = pd.DataFrame(odoo)
         df_mt = pd.DataFrame(metas)
-        st.markdown("<h1 style='text-align:center;background-color: #95b8d1; color: #ffffff'>🔄 REFORMA INTERNA </h1>", unsafe_allow_html=True)
+        #ENCABEZADO
+        #st.markdown("<h1 style='text-align: center; background-color: #000045; color: #ece5f6'>Unidad DE PLANIFICACIÓN</h1>", unsafe_allow_html=True)
+        #st.markdown("<h4 style='text-align: center; background-color: #000045; color: #ece5f6'>Sistema de reformas</h4>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA INTERNA </h1>", unsafe_allow_html=True)
         st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(En la misma Unidad)</h4>", unsafe_allow_html=True)
         st.markdown("---")
         #reload---
         reload_data = False
-        #filtramos solo PAI
+        #FILTRAMOS SOLO PAI
         df_odoo= df_odoo.loc[df_odoo['PAI/NO PAI'] == 'PAI']
         df_odoo['Codificado'] = df_odoo['Codificado'].round(2)
-        #agrupamos las Unidades
+        #AGRUPAMOS LAS UNIDADES
         direc = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
-        #filtrar columnas 
+        #FILTRAMOS COLUMNAS 
         df_od= df_odoo.loc[df_odoo.Unidad == direc].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()##.agg({'Codificado':'sum'},{'Saldo_Disponible':'sum'}) #
         df_od.rename(columns = {'Saldo Disponible': 'Saldo_Disponible'}, inplace= True)
         df_mt= df_mt.loc[df_mt.Unidad == direc]
-        #Creamos los Datos ha editar
-        #data=df_od
         df = pd.DataFrame(df_od)
         df = agregar_columnas(df)
+        #SUBTITULOS
         st.markdown(f"<h2 style='text-align:center;'> {direc} </h2>", unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+        #FORMATO DE COLUMNAS
         gb = GridOptionsBuilder.from_dataframe(df) 
         gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
         gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
         gb.configure_column('Estructura')
-        gb.configure_column(field ='Codificado', column_name = "Codificado", maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
-        gb.configure_column('Saldo_Disponible', aggFunc='sum',maxWidth=150, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');" )
+        gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
+        gb.configure_column('Saldo_Disponible', maxWidth=150, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
         cellsytle_jscode = JsCode("""
             function(params) {
                 if (params.value > '0') {
@@ -267,27 +261,25 @@ def Interna():
         change = JsCode("""
             function isCellEditable(params){
                 if(params.data.Saldo_Disponible >= 0 && params.data.Movimiento >= 0 ){
-                    return true
+                    return null
                 }
                 else{
-                    return false
+                    alert("NO SE PUEDE AGREGAR UN VALOR NEGATIVO");
 
                 }
                 
             }
         """)    
-        gb.configure_column('Movimiento', editable= change ,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum',maxWidth=150, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+        gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=150, valueFormatter="data.Movimiento.toLocaleString('en-US');")
         
-        gb.configure_column('Nuevo Codificado', valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
-                            editable=True, type=['numericColumn'], aggFunc='sum',maxWidth=150, valueFormatter="data.Nuevo Codificado.toLocaleString('en-US');")
+        gb.configure_column('Nuevo Codificado',header_name='Nuevo Cod' , valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
+                            type=['numericColumn'],maxWidth=150, valueFormatter="data.Nuevo Codificado.toLocaleString('en-US');", aggFunc='sum', enableValue=True)
         gb.configure_column('TOTAL', hide=True)
 
         go = gb.build()
         go['alwaysShowHorizontalScroll'] = True
         go['scrollbarWidth'] = 1
         reload_data = False
-        #return_mode_value = DataReturnMode.FILTERED_AND_SORTED
-        #update_mode_value = GridUpdateMode.GRID_CHANGED
 
         edited_df = AgGrid(
             df,
@@ -305,12 +297,7 @@ def Interna():
             #no agregar cambia la columna de float a str
             #try_to_convert_back_to_original_types=False
         )
-        st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
-        # Mostrar la tabla con la extensión st_aggrid
-        edit_df = AgGrid(df_mt, editable=True)
-                        #reload_data=reload_data,)
-        edit_df = pd.DataFrame(edit_df['data'])
-
+       
         # Si se detectan cambios, actualiza el DataFrame
         if edited_df is not None:
             # Convierte el objeto AgGridReturn a DataFrame
@@ -318,14 +305,41 @@ def Interna():
             edited_df['TOTAL'] = edited_df['Codificado'] + edited_df['Movimiento']
             #st.write('Tabla editada:', edited_df)
             #st.write(f'<div style="width: 100%; margin: auto;">{df.to_html(index=False)}</div>',unsafe_allow_html=True)
-        
+        #AGREGAR NUEVA PARTIDA
+        st.markdown(
+            '''
+            <style>
+            .streamlit-expanderHeader {
+                background-color: blue;
+                color: black; # Adjust this for expander header color
+            }
+            .streamlit-expanderContent {
+                background-color: blue;
+                color: black; # Expander content color
+            }
+            </style>
+            ''',
+            unsafe_allow_html=True
+        )
+        with st.expander("🆕  Crear una partida nueva", expanded=False): 
+            st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
+            dfnuevop = pd.DataFrame(columns=['Proyecto','Estructura','Incremento'])
+            #colors = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
+            config = {
+                'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='large', options=df_od['PROYECTO'].unique()),
+                'Estructura' : st.column_config.TextColumn('Estructura', width='large', required=True),
+                'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0)
+            }
 
-        #CERRAMOS LA SECCIÓN
-        st.markdown("---")
-        st.subheader("Totales ") 
+            result = st.data_editor(dfnuevop, column_config = config, num_rows='dynamic')
+
+            if st.button('Crear partida:'):
+                st.write(result)
+        #TOTALES
         total_cod = int(edited_df['Codificado'].sum())
         total_mov = int(edited_df['Movimiento'].sum())
         total_tot = int(edited_df['TOTAL'].sum())
+        nuevo_p = int(result['Incremento'].sum())
 
         #DIVIDIMOS EL TABLERO EN 3 SECCIONES
         left_column, center_column, right_column = st.columns(3)
@@ -337,18 +351,27 @@ def Interna():
         
         with center_column:
             st.subheader("Nuevo Codificado: ")
-            st.subheader(f"US $ {total_tot:,}")
+            st.subheader(f"US $ {total_tot+nuevo_p:,}")
 
         with right_column:
-            st.subheader("Total movimiento: ")
-            st.subheader(f"US $ {total_mov:,}")
+            st.subheader("Total Increm/Dismi(): ")
+            st.subheader(f"US $ {total_mov+nuevo_p:,}")
 
 
-        if total_cod != total_tot:
-            st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado y nuevo codificado son diferentes</h3></div>', unsafe_allow_html=True)
+        st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
+        # Mostrar la tabla con la extensión st_aggrid
+        with st.expander("🆕  Modificar metas de los proyectos", expanded=False): 
+            edit_df = AgGrid(df_mt, editable=True)
+                            #reload_data=reload_data,)
+            edit_df = pd.DataFrame(edit_df['data'])
+
+        if total_cod != total_tot+nuevo_p:
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado y nuevo codificado son diferentes</h3></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado y nuevo codificado son iguales</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado y nuevo codificado son iguales</h3></div>', unsafe_allow_html=True)
 
+
+       
         try:
             edited_rows = edited_df[edited_df['Movimiento'] != 0]
             edit_rows = edit_df[edit_df['Nueva Meta'] != '-']
@@ -357,7 +380,17 @@ def Interna():
 
         st.markdown("---")
         #st.markdown(type(Codificado))
-        export_as_pdf = st.button("Guardar y Descargar")
+        def descargar_xlsx(edited_rows, edit_rows, result):
+              # Guardar los DataFrames en dos hojas de un archivo XLSX en memoria
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        edited_rows.to_excel(writer, sheet_name='Presupuesto', index=False)
+                        edit_rows.to_excel(writer, sheet_name='Metas', index=False)
+                        result.to_excel(writer, sheet_name='Nueva_partida', index=False)
+                    output.seek(0)
+                    return output
+        
+        export_as_pdf = st.button("Guardar información")
         #Creamos una nueva tabla para el presupuesto
         columnas_filtradas = ['PROYECTO','Código','Estructura','Movimiento']
         nuevo_df = edited_rows[columnas_filtradas]
@@ -369,23 +402,22 @@ def Interna():
         total_row = pd.DataFrame([['Total', sum_row['Movimiento']]], 
                             columns=['Proyecto, Partida Presupuestaria, Estructura','Movimiento'], index=['Total'])
         nuevo_df = pd.concat([nuevo_df, total_row])
+        nuevo_df = nuevo_df
         #Creamos una nueva tabla para las metas
         meta_filtro = ['Proyecto','Metas','Nueva Meta']
         ed_df = edit_rows[meta_filtro]
+        result2 = result
+        result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
+        resul_filtro=['Proyecto, Estructura','Incremento']
+        result2=result2[resul_filtro]
 
-        if total_cod == total_tot:
+        if total_cod == total_tot+nuevo_p:
             if export_as_pdf:
                 now = datetime.now()
                 fecha_hora = now.strftime("%Y%m%d%H%M")
-                excel_file = f'presupuesto{fecha_hora}.xlsx'
-                excel_file2 = f'metas{fecha_hora}.xlsx'        
+    
                 st.write('Descargando... ¡Espere un momento!')
-                edited_rows.to_excel(excel_file, index= False)
-                #edited_rows.to_csv('data.csv', index=False)
-                edit_rows.to_excel(excel_file2, index= False)
-                st.success(f'¡Archivo Excel "{excel_file}" descargado correctamente!')
-                st.success(f'¡Archivo Excel "{excel_file2}" descargado correctamente!')
-
+                
                 pdf = FPDF()
                 pdf.set_auto_page_break(auto=True, margin=15)
                 pdf.add_page()
@@ -412,6 +444,34 @@ def Interna():
                 pdf.ln()
 
                 for _, row in nuevo_df.iterrows():
+                    a=0
+                    b=0
+                    for i, value in enumerate(row):
+                        # Convertir el valor a string antes de la verificación
+                        value = str(value)
+                        if len(value) > 25:
+                            x = pdf.get_x()  # Guardar la posición X actual
+                            y = pdf.get_y()  # Guardar la posición Y actual
+                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
+                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
+                        #    a = 1
+                        #   b = len(value)/4
+                        #elif a == 1:
+                        #    x = pdf.get_x()  # Guardar la posición X actual
+                        #    y = pdf.get_y()  # Guardar la posición Y actual
+                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
+                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
+                        #    a = 1
+                        else:
+                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
+                    pdf.ln()
+                pdf.ln(10)
+                pdf.cell(200, 30, txt=f"Nueva Partida", ln=True, align="C")
+                for i, col in enumerate(result2.columns):
+                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
+                pdf.ln()
+
+                for _, row in result2.iterrows():
                     a=0
                     b=0
                     for i, value in enumerate(row):
@@ -473,11 +533,24 @@ def Interna():
 
 
                 # Guardar el PDF
-                pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
-                pdf.output(pdf_output)
-                st.success(f"Se ha generado el PDF: {pdf_output}")
+                #pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
+                #pdf.output(pdf_output)
+                archivo_xlsx = descargar_xlsx(edited_rows, edit_rows, result)
+                st.download_button(
+                    label="Haz clic para descargar",
+                    data=archivo_xlsx.read(),
+                    key="archivo_xlsx",
+                    file_name=f"Reforma_{fecha_hora}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+
+                
+                html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
+
+                st.markdown(html, unsafe_allow_html=True)
+#                st.success(f"Se ha generado el PDF: {pdf_output}")
         else:
-            st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
                 
 
     if __name__ == '__main__':
@@ -489,21 +562,11 @@ def Externa():
     st.markdown("<h1 style='text-align:center;background-color: #028d96; color: #ffffff'>🌀 REFORMA EXTERNA </h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(Entre diferentes Unidades)</h4>", unsafe_allow_html=True)
     st.markdown("---")
-    #htmlstr = f"<h2 style='background-color: #A7727D; color: #F9F5E7; border-radius: 7px; padding-left: 8px; text-align: center'> Selecione la Unidad donde se retira el movimiento</style></h2>"
-    #st.markdown(htmlstr, unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; background-color: #f1f6f7; color: #080200'> Paso 1: Selecione la Unidad donde se retira el movimiento </h2>", unsafe_allow_html=True)
-    #para conectar a google drive
-    #gc = gspread.service_account(filename= 'reformas-402915-4d33dedfb202.json')
-    #abrir el archivo de drive
-    #sh = gc.open('reforma')
-    #mt = gc.open('REFORMA_POA')
-    #la hoja de sheets
-    #wks = sh.get_worksheet(0)
-    #mts = mt.get_worksheet(0)
+    st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Paso 1: Selecione la Unidad donde se retira el Movimiento </h2>", unsafe_allow_html=True)
     #para editar
-    odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')
+    odoo = pd.read_excel("tabla_presupuesto.xlsx")
     #odoo = wks.get_all_records()
-    metas = pd.read_excel("tabla_metas.xlsx", engine='openpyxl')
+    metas = pd.read_excel("tabla_metas.xlsx")
     #metas = mts.get_all_records()
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
@@ -529,13 +592,17 @@ def Externa():
     df = agregar_columnas(df)
     st.markdown(f"<h2 style='text-align:center;'> {direc} </h2>", unsafe_allow_html=True)
     st.title('')
-    st.markdown(f"<h3 >Tabla de Presupuestos</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuestos</h3>", unsafe_allow_html=True)
+    
+        
     gb = GridOptionsBuilder.from_dataframe(df) 
-    gb.configure_column('Unidad', hide=True)
+    gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
     gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura')
-    gb.configure_column('Codificado', header_name = "Codificado", aggFunc='sum')
-    gb.configure_column('Saldo_Disponible', aggFunc='sum')
+    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
+    #gb.configure_column('Codificado', header_name = "Codificado", aggFunc='sum')
+    gb.configure_column('Saldo_Disponible', maxWidth=150, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+    #gb.configure_column('Saldo_Disponible', aggFunc='sum')
     cellsytle_jscode = JsCode("""
         function(params) {
             if (params.value > '0') {
@@ -558,9 +625,10 @@ def Externa():
             }
         };
     """)
-    
-    gb.configure_column('Movimiento', editable= True,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum')
-    gb.configure_column('TOTAL2', valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
+        
+    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=150, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+    #gb.configure_column('Movimiento', editable= True,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum')
+    gb.configure_column('TOTAL2',header_name='Nuevo cod', valueGetter='Number(data.Codificado) + Number(data.Movimiento)',maxWidth=150, cellRenderer='agAnimateShowChangeCellRenderer',
                          editable=True, type=['numericColumn'], aggFunc='sum')
     gb.configure_column('TOTAL', hide=True)
     go = gb.build()
@@ -584,13 +652,8 @@ def Externa():
         #no agregar cambia la columna de float a str
         #try_to_convert_back_to_original_types=False
     )
-    st.markdown(f"<h3 > Tabla de Metas </h3>", unsafe_allow_html=True)
-    # Mostrar la tabla con la extensión st_aggrid
-    edit_df = AgGrid(df_mt, editable=True,
-                      reload_data=reload_data,)
-    edit_df = pd.DataFrame(edit_df['data'])
-
-    # Si se detectan cambios, actualiza el DataFrame
+    
+        # Si se detectan cambios, actualiza el DataFrame
     if edited_df is not None:
         # Convierte el objeto AgGridReturn a DataFrame
         edited_df = pd.DataFrame(edited_df['data'])
@@ -599,9 +662,6 @@ def Externa():
         #st.write(f'<div style="width: 100%; margin: auto;">{df.to_html(index=False)}</div>',unsafe_allow_html=True)
     
 
-    #CERRAMOS LA SECCIÓN
-    st.markdown("---")
-    st.subheader("Totales: ") 
     total_cod = int(edited_df['Codificado'].sum())
     total_mov = int(edited_df['Movimiento'].sum())
     total_tot = int(edited_df['TOTAL'].sum())
@@ -611,34 +671,47 @@ def Externa():
     with left_column:
         st.subheader("Total Codificado: ")
         st.subheader(f"US $ {total_cod:,}")
-        #st.dataframe(df_od.stack())
-        #st.write(df_od)
+        
     
     with center_column:
         st.subheader("Nuevo Codificado: ")
         st.subheader(f"US $ {total_tot:,}")
 
     with right_column:
-        st.subheader("Total movimiento: ")
+        st.subheader("Total increme/dismin: ")
         st.subheader(f"US $ {total_mov:,}")
+
+    st.markdown("---")
+
+    st.markdown("<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas</h3>", unsafe_allow_html=True)
+    # Mostrar la tabla con la extensión st_aggrid
+    with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
+        edit_df = AgGrid(df_mt, editable=True,
+                        reload_data=reload_data,)
+        edit_df = pd.DataFrame(edit_df['data'])
+
+
+
+    #CERRAMOS LA SECCIÓN
+    st.markdown("---")
 
 
     if total_mov < 0:
         st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a restado el valor de:  ${total_mov:}</h3></div>', unsafe_allow_html=True)
     elif total_mov == 0:
-        st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado ningun movimiento del codificado</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado ningun Movimiento del codificado</h3></div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a sumado el valor de:  ${total_mov:}</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a sumado el valor de:  ${total_mov:}</h3></div>', unsafe_allow_html=True)
         
     ##################################################
     #################     TABLA 2  ###################
     ################################################## 
     st.markdown("---")
-    st.markdown("<h2 style='text-align: center; background-color: #f1f6f7; color: #080200'> Paso 2: Unidad a que se le asigna el movimiento  </h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Paso 2: Unidad a que se le asigna el Movimiento  </h2>", unsafe_allow_html=True)
     
     # Obtener las opciones para el segundo selectbox excluyendo la opción seleccionada en el primero    
     opci = odf['Unidad'][odf['Unidad'] != direc]
-    selec= st.selectbox('Escoja la Unidad donde se agregara el movimiento', options= opci.unique())
+    selec= st.selectbox('Escoja la Unidad donde se agregara el Movimiento', options= opci.unique())
     #filtrar columnas 
     dfff= odf.loc[odf.Unidad == selec].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()
     dfff.rename(columns = {'Saldo Disponible': 'Saldo_Disponible'}, inplace= True)
@@ -649,7 +722,7 @@ def Externa():
     dfd2 = agregar_column(dfd2)
     st.markdown(f"<h2 style='text-align:center;'> {selec} </h2>", unsafe_allow_html=True)
     st.title('')
-    st.markdown(f"<h3 > Tabla de Presupuestos</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuesto </h3>", unsafe_allow_html=True)
    
     edi = AgGrid(
         dfd2,
@@ -657,7 +730,7 @@ def Externa():
         gridOptions=go,
         width=1000, 
         height=400, 
-        #fit_columns_on_grid_load=True,
+        fit_columns_on_grid_load=True,
         theme="streamlit",
         #data_return_mode=return_mode_value, 
         
@@ -668,14 +741,22 @@ def Externa():
         #no agregar cambia la columna de float a str
         #try_to_convert_back_to_original_types=False
     )
-    st.markdown(f"<h3> Tabla de Metas </h3>", unsafe_allow_html=True)
-    # Mostrar la tabla con la extensión st_aggrid
-    edit_dfd = AgGrid(df_mtt, 
-                      editable=True,
-                      #reload_data=reload_data
-                      )
-    edit_dfd = pd.DataFrame(edit_dfd['data'])
 
+    with st.expander("🆕  Crear una partida nueva", expanded=False): 
+            st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
+            dfnuevop = pd.DataFrame(columns=['Proyecto','Estructura','Incremento'])
+            #colors = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
+            config = {
+                'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='large', options=dfff['PROYECTO'].unique()),
+                'Estructura' : st.column_config.TextColumn('Estructura', width='large', required=True),
+                'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0)
+            }
+
+            result = st.data_editor(dfnuevop, column_config = config, num_rows='dynamic')
+
+            if st.button('Crear partida:'):
+                st.write(result)
+        
     # Si se detectan cambios, actualiza el DataFrame
     if edi is not None:
         # Convierte el objeto AgGridReturn a DataFrame
@@ -683,56 +764,78 @@ def Externa():
         edi['TOTAL'] = edi['Codificado'] + edi['Movimiento']
         #st.write('Tabla editada:', edited_df)
         #st.write(f'<div style="width: 100%; margin: auto;">{df.to_html(index=False)}</div>',unsafe_allow_html=True)
-    
-    
-    #CERRAMOS LA SECCIÓN
-    st.markdown("---")
+
     st.subheader("Totales: ") 
     total_cod2 = int(edi['Codificado'].sum())
     total_mov2 = int(edi['Movimiento'].sum())
     total_tot2 = int(edi['TOTAL'].sum())
+    nuevo_p = int(result['Incremento'].sum())
 
     #DIVIDIMOS EL TABLERO EN 3 SECCIONES
     left_column, center_column, right_column = st.columns(3)
     with left_column:
         st.subheader("Total Codificado: ")
         st.subheader(f"US $ {total_cod2:,}")
-        #st.dataframe(df_od.stack())
-        #st.write(df_od)
     
     with center_column:
         st.subheader("Nuevo Codificado: ")
-        st.subheader(f"US $ {total_tot2:,}")
+        st.subheader(f"US $ {total_tot2+nuevo_p:,}")
 
     with right_column:
-        st.subheader("Total movimiento: ")
-        st.subheader(f"US $ {total_mov2:,}")
+        st.subheader("Total increme/dismin: ")
+        st.subheader(f"US $ {total_mov2+nuevo_p:,}")
 
+    st.markdown("<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas </h3>", unsafe_allow_html=True)
+    # Mostrar la tabla con la extensión st_aggrid
+    with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
+        edit_dfd = AgGrid(df_mtt, 
+                        editable=True,
+                        #reload_data=reload_data
+                        )
+        edit_dfd = pd.DataFrame(edit_dfd['data'])
 
-    if total_mov2 < 0:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a restado el valor de:  ${total_mov2:}</h3></div>', unsafe_allow_html=True)
-    elif total_mov2 == 0:
-        st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado ningun movimiento del codificado</h3></div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a sumado el valor de:  ${total_mov2:}</h3></div>', unsafe_allow_html=True)
-
+    
+    
+    
+    #CERRAMOS LA SECCIÓN
     st.markdown("---")
 
-    if total_mov2 != -total_mov:
-        st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor del movimiento en las Unidades es diferente, por tanto no se puede proseguir. </h3></div>', unsafe_allow_html=True)
+
+    if total_mov2+nuevo_p < 0:
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a restado el valor de:  ${total_mov2+nuevo_p:}</h3></div>', unsafe_allow_html=True)
+    elif total_mov2+nuevo_p == 0:
+        st.markdown('<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado ningun Movimiento del codificado</h3></div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#ccffcc; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor del movimiento en las Unidades es el mismo.</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a sumado el valor de:  ${total_mov2+nuevo_p:}</h3></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("---")
+
+    if total_mov2+nuevo_p != -total_mov:
+        st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor del Movimiento en las Unidades es diferente, por tanto no se puede proseguir. </h3></div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor del Movimiento en las Unidades es el mismo.</h3></div>', unsafe_allow_html=True)
 
     try:
         edited_rows = edited_df[edited_df['Movimiento'] != 0]
         edited_rows2 = edi[edi['Movimiento'] != 0]
-        edit_rows = edit_df[edit_df['Nueva Meta'] != '']
-        edit_rows2 = edit_dfd[edit_dfd['Nueva Meta'] != '']
+        edit_rows = edit_df[edit_df['Nueva Meta'] != '-']
+        edit_rows2 = edit_dfd[edit_dfd['Nueva Meta'] != '-']
     except:
         st.write('No se realizaron cambios en la información')
 
-    #if st.button('Descargar como Excel'):
-    st.markdown("---")    
+    def descargar_xlsx(edited_rows,edited_rows2, edit_rows, edit_rows2, result):
+              # Guardar los DataFrames en dos hojas de un archivo XLSX en memoria
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        edited_rows.to_excel(writer, sheet_name='Presupuesto (DE)', index=False)
+                        edited_rows2.to_excel(writer, sheet_name='Presupuesto(PARA)', index=False)
+                        edit_rows.to_excel(writer, sheet_name='Metas (DE)', index=False)
+                        edit_rows2.to_excel(writer, sheet_name='Metas (PARA)' , index=False)
+                        result.to_excel(writer, sheet_name='Nueva_partida', index=False)
+                    output.seek(0)
+                    return output
+
     export_as_pdf = st.button("Guardar y Descargar")
     #Creamos una nueva tabla para el presupuesto
     columnas_filtradas = ['PROYECTO','Código','Estructura','Movimiento']
@@ -753,32 +856,27 @@ def Externa():
     
     nuevo_df = pd.concat([nuevo_df, total_row])
     nuevo_df2 = pd.concat([nuevo_df2, total_row2])
+    
+    # TABLA NUEVO
+    result_filtro1 = ['Proyecto','Estructura','Incremento']
+    result2 = result[result_filtro1]
+    result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
+    resul_filtro=['Proyecto, Estructura','Incremento']
+    result2=result2[resul_filtro]
+
     #Creamos una nueva tabla para las metas
     meta_filtro = ['Proyecto','Metas','Nueva Meta']
     ed_df = edit_rows[meta_filtro]
     ed_df2 = edit_rows2[meta_filtro]
 
-    if total_mov2 == -(total_mov):
+    if total_mov2+nuevo_p == -(total_mov):
         if export_as_pdf:
             now = datetime.now()
             fecha_hora = now.strftime("%Y%m%d%H%M")
-            
-            excel_file = f'presupuesto-{fecha_hora}.xlsx'
-            excel_file2 = f'metas-{fecha_hora}.xlsx'
-            excel_file3 = f'presupuesto2-{fecha_hora}.xlsx'
-            excel_file4 = f'metas2-{fecha_hora}.xlsx'             
-            st.write('Descargando... ¡Espere un momento!')
-            edited_rows.to_excel(excel_file, index=False)
-            edit_rows.to_excel(excel_file2, index=False)
-            edited_rows2.to_excel(excel_file3, index=False)
-            edit_rows2.to_excel(excel_file4, index=False)
-            st.success(f'¡Archivo Excel "{excel_file}" descargado correctamente!')
-            st.success(f'¡Archivo Excel "{excel_file2}" descargado correctamente!')
 
             pdf = FPDF()
             pdf.set_auto_page_break(auto=True, margin=15)
             pdf.add_page()
-
             # Obtener fecha y hora actual para el título
             pdf.set_title(f"Reforma Presupuesto - {fecha_hora}")
             # Escribir el título en el PDF
@@ -836,6 +934,25 @@ def Externa():
                     else:
                         pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
                 pdf.ln()
+           
+            pdf.cell(200, 30, txt=f"Nueva Partida", ln=True, align="C")
+            for i, col in enumerate(result2.columns):
+                pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
+            pdf.ln()
+
+            for _, row in result2.iterrows():
+                a=0
+                b=0
+                for i, value in enumerate(row):
+                    value = str(value)
+                    if len(value) > 25:
+                        x = pdf.get_x()  # Guardar la posición X actual
+                        y = pdf.get_y()  # Guardar la posición Y actual
+                        pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
+                        pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
+                    else:
+                        pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
+                pdf.ln()
 
             pdf.add_page()
             pdf.set_font("Arial", 'B', 16)
@@ -873,54 +990,50 @@ def Externa():
                         pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
                 pdf.ln()
 
-            pdf.add_page()
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-            pdf.cell(200, 15, txt=f"{selec}", ln=True, align="C")
-            pdf.ln(10)
+            #pdf.add_page()
+            #pdf.set_font("Arial", 'B', 16)
+            #pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
+            #pdf.cell(200, 15, txt=f"{selec}", ln=True, align="C")
+            #pdf.ln(10)
             # Anchos de columna para el DataFrame en el PDF
             #col_widths2 = [60, 60,60]  # Anchos de columna fijos
             # Obtener anchos de columna dinámicos basados en el contenido
-            pdf.set_font("Arial", size=7)
-            for i, col in enumerate(ed_df2.columns):
-                pdf.cell(col_widths2[i], 10, str(col), border=1, align='C')
-            pdf.ln()
+            #pdf.set_font("Arial", size=7)
+            #for i, col in enumerate(ed_df2.columns):
+            #    pdf.cell(col_widths2[i], 10, str(col), border=1, align='C')
+            #pdf.ln()
 
-            for _, row in ed_df2.iterrows():
-                a=0
-                b=0
-                for i, value in enumerate(row):
+            #for _, row in ed_df2.iterrows():
+            #    a=0
+            #    b=0
+            #    for i, value in enumerate(row):
                     # Convertir el valor a string antes de la verificación
-                    value = str(value)
-                    if len(value) > 25:
-                        x = pdf.get_x()  # Guardar la posición X actual
-                        y = pdf.get_y()  # Guardar la posición Y actual
-                        pdf.multi_cell(col_widths2[i], 5, txt=value, border=1)
-                        pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-                    else:
-                        pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-                pdf.ln()
+            #        value = str(value)
+            #        if len(value) > 25:
+            #            x = pdf.get_x()  # Guardar la posición X actual
+            #            y = pdf.get_y()  # Guardar la posición Y actual
+            #            pdf.multi_cell(col_widths2[i], 5, txt=value, border=1)
+            #            pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
+            #        else:
+            #            pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
+            #    pdf.ln()
             
-
-
-            # Guardar el PDF
-            pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
-            pdf.output(pdf_output)
-            st.success(f"Se ha generado el PDF: {pdf_output}")
+            archivo_xlsx = descargar_xlsx(edited_rows,edited_rows2, edit_rows,edit_rows2, result)
+            st.download_button(
+                    label="Haz clic para descargar",
+                    data=archivo_xlsx.read(),
+                    key="archivo_xlsx",
+                    file_name=f"Reforma_{fecha_hora}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+                
+            html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
+            st.markdown(html, unsafe_allow_html=True)
     else:
-        st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         
 
 def Liberación ():
-        #para conectar a google drive
-        #gc = gspread.service_account(filename= 'reformas-402915-4d33dedfb202.json')
-        #abrir el archivo de drive
-        #sh = gc.open('reforma')
-        #mt = gc.open('REFORMA_POA')
-        #la hoja de sheets
-        #wks = sh.get_worksheet(0)
-        #mts = mt.get_worksheet(0)
-        #para editar
         odoo = pd.read_excel("tabla_presupuesto.xlsx")        
         #odoo = wks.get_all_records()
         metas = pd.read_excel("tabla_metas.xlsx")
@@ -950,12 +1063,15 @@ def Liberación ():
         df = agregar_columnas(df)
         st.markdown(f"<h2 style='text-align:center;'> {direc} </h2>", unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
         gb = GridOptionsBuilder.from_dataframe(df) 
         gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
         gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
         gb.configure_column('Estructura')
-        gb.configure_column(field ='Codificado', column_name = "Codificado", maxWidth=150, aggFunc="sum")
+        gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
+        #gb.configure_column('Codificado', header_name = "Codificado", aggFunc='sum')
+        gb.configure_column('Saldo_Disponible', maxWidth=150, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+        #gb.configure_column(field ='Codificado', column_name = "Codificado", maxWidth=150, aggFunc="sum")
         gb.configure_column('Saldo_Disponible', aggFunc='sum',maxWidth=150 )
         cellsytle_jscode = JsCode("""
             function(params) {
@@ -992,7 +1108,7 @@ def Liberación ():
                 
             }
         """)    
-        gb.configure_column('Movimiento', editable= change ,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum',maxWidth=150)
+        gb.configure_column('Movimiento',header_name='Increm/Dism', editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum',maxWidth=150)
         
         gb.configure_column('Nuevo Codificado', valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
                             editable=True, type=['numericColumn'], aggFunc='sum',maxWidth=150)
@@ -1056,7 +1172,7 @@ def Liberación ():
             st.subheader(f"US $ {total_tot:,}")
 
         with right_column:
-            st.subheader("Total movimiento: ")
+            st.subheader("Total Movimiento: ")
             st.subheader(f"US $ {total_mov:,}")
 
 
@@ -1189,15 +1305,6 @@ def Liberación ():
             st.warning('No se puede descargar, porque no se esta liberando el presupuesto')
                 
 def Solicitud ():
-        #para conectar a google drive
-        #gc = gspread.service_account(filename= 'reformas-402915-4d33dedfb202.json')
-        #abrir el archivo de drive
-        #sh = gc.open('reforma')
-        #mt = gc.open('REFORMA_POA')
-        #la hoja de sheets
-        #wks = sh.get_worksheet(0)
-        #mts = mt.get_worksheet(0)
-        #para editar
         odoo = pd.read_excel("tabla_presupuesto.xlsx")
         #odoo = wks.get_all_records()
         metas = pd.read_excel("tabla_metas.xlsx")
@@ -1228,7 +1335,7 @@ def Solicitud ():
         df = agregar_columnas(df)
         st.markdown(f"<h2 style='text-align:center;'> {direc} </h2>", unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+        st.markdown("<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto</h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
         gb = GridOptionsBuilder.from_dataframe(df) 
         gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
         gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
@@ -1270,7 +1377,7 @@ def Solicitud ():
                 
             }
         """)    
-        gb.configure_column('Movimiento', editable= change ,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum',maxWidth=150)
+        gb.configure_column('Movimiento', header_name='Increm/Dism', editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, aggFunc='sum',maxWidth=150)
         
         gb.configure_column('Nuevo Codificado', valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
                             editable=True, type=['numericColumn'], aggFunc='sum',maxWidth=150)
@@ -1334,7 +1441,7 @@ def Solicitud ():
             st.subheader(f"US $ {total_tot:,}")
 
         with right_column:
-            st.subheader("Total movimiento: ")
+            st.subheader("Total Movimiento: ")
             st.subheader(f"US $ {total_mov:,}")
 
 
@@ -1484,7 +1591,7 @@ page_names_to_funcs = {
 #""", unsafe_allow_html=True)
 
 
-odoo = pd.read_excel("tabla_presupuesto.xlsx", engine='openpyxl')        
+odoo = pd.read_excel("tabla_presupuesto.xlsx")        
 df_odoo = pd.DataFrame(odoo)
 FECHA = df_odoo.iloc[2]["Fecha"]
 st.sidebar.image('logo GadPP.png', caption='Unidad de Planificación')
@@ -1521,7 +1628,8 @@ if contrasena == contrasena_correcta:
     df_metas = pd.DataFrame(metas)
 
     st.sidebar.success("Contraseña correcta. ¡Bienvenido!")
-    df_odoo.to_excel('tabla_presupuesto.xlsx', index= False, engine='openpyxl')
-    df_metas.to_excel('tabla_metas.xlsx', index= False, engine='openpyxl')
+    df_odoo.to_excel('tabla_presupuesto.xlsx', index= False)
+    df_metas.to_excel('tabla_metas.xlsx', index= False)
 else:
     st.sidebar.error("Contraseña incorrecta. Acceso denegado.")
+
