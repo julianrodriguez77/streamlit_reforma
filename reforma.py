@@ -1,7 +1,8 @@
 import os
+import gspread
 import streamlit as st
 import pandas as pd
-from st_aggrid import JsCode, AgGrid, GridOptionsBuilder,GridUpdateMode, DataReturnMode
+from st_aggrid import JsCode, AgGrid, GridOptionsBuilder,GridUpdateMode, DataReturnMode,ColumnsAutoSizeMode
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import base64
@@ -11,7 +12,10 @@ from datetime import datetime
 import hydralit_components as hc
 from PIL import Image
 from io import BytesIO
-import gspread
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter,A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph,Image,  PageTemplate, Frame
 
 
 #para que reconosca la tabla xlsx
@@ -21,11 +25,22 @@ pip.main(["install", "openpyxl"])
 st.set_page_config(page_title= 'Reformas CPI',
                     page_icon='moneybag:',
                     layout='wide' )
+#ocultar menu streamlit
+hide_st_style = """
+<style>
+MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 
 #@st.cache_data()
 def create_download_link(val, filename):
     b64 = base64.b64encode(val)  
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
+
 # Para la seccion 1 y 2
 def agregar_columnas(df):
     df['Movimiento'] = 0
@@ -38,8 +53,8 @@ def agregar_column(dfd):
     return dfd
 
 def Inicio():
-    st.markdown("<h1 style='text-align: center; background-color: #000045; color: #ece5f6'>Unidad DE PLANIFICACIÓN</h1>", unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align: center; background-color: #000045; color: #ece5f6'>Sistema de reformas</h4>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; background-color: #000045; color: #ece5f6'>Reformas al Plan Operativo Anual </h1>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; background-color: #000045; color: #ece5f6'>CPI</h4>", unsafe_allow_html=True)
     menu_data = [
     {'id': 1, 'label': "Información", 'key': "md_how_to", 'icon': "fa fa-home"},
     {'id': 2, 'label': "Documentación", 'key': "md_run_analysis"}
@@ -47,44 +62,47 @@ def Inicio():
     #{'id': 4, 'label': "Semantic Q&A", 'key': "md_rag"}
     ]
 
-    int(hc.nav_bar(
+    paginas=int(hc.nav_bar(
         menu_definition=menu_data,
         hide_streamlit_markers=False,
         sticky_nav=True,
         sticky_mode='pinned',
         override_theme={'menu_background': '#4c00a5'}
     ))
-    st.header("**📖 Información general de la Aplicación para realizar reformas**")
-    st.markdown("""
+
+    if paginas ==1:
+            
+        st.header("**📖 REFORMAS AL PLAN OPERATIVO ANUAL**")
+        st.markdown("""
+                        
+                        Las modificaciones al Plan Operativo Anual (POA) del Gobierno Autónomo Descentralizado de la Prefectura de Pichincha (GADPP)
+                        consisten en la actualización del presupuesto y las metas establecidas en los proyectos de año fiscal en curso, de conformidad
+                        con la normativa vigente.
                     
-                    General:
-
-                    Las reformas al Plan Operativo Anual (POA) del Gobierno Autónomo Descentralizado de la Prefectura de Pichincha (GADPP) consisten en el cambio/modificación a las partidas presupuestarias, proyectos, y metas establecidas
-                    por cada una de las Unidades/Unidades del GADPP.
-                    Este proceso implica en líneas generales el procesamiento de información disponible en el sistema odoo, así como bases sueltas y el seguimiento a metas en la plataforma
-                    de seguimiento, con el propósito de mantener una congruencia de la información para proceder aceptar dichos cambios/modificaciones. 
-                    Para llevar a cabo de manera efectiva el proceso y diagnóstico, es crucial tener en cuenta tres elementos esenciales: la normativa, el proceso y las bases. 
-
-                    Este aplicativo web se presenta como una estrategia efectiva para optimizar y agilizar el proceso de gestión de reformas en la institución, al proporcionar una plataforma accesible y dinámica que permitirá a los usuarios
-                    navegar a través de los datos, realizar análisis en tiempo real y tomar decisiones informadas de manera eficiente reduciendo el trabajo manual y posibles errores humanos
-             
-                    Además, el diseño del aplicativo web presenta un panel interactivo y de fácil intuición, garantizando que las diversas Unidades
-                    de la institución puedan utilizar la herramienta de manera eficiente
+                        Con el propósito de llevar a cabo este proceso de manera eficaz y optimizar el acceso a información actualizada, la Dirección
+                        de Planificación ha implementado la presente plataforma. Esta herramienta facilita la obtención de datos de cada uno de los proyectos 
+                        y Unidades del GADPP incluidos en el Plan Anual de Inversión (PAI).
+                    
+                        Para conocer más detallada acerca del funcionamiento de la plataforma, se recomienda revisar el **manual de uso** correspondiente. 
+                    
+                        
+                        """)
+            
+        st.info("""
+                    Para cualquier inconveniente o duda adicional en la utilización de la plataforma, se invita a ponerse en contacto con Cecilia Sosa,
+                    a la extensión institucional 12022.
+                """)
+    if paginas == 2:
+         st.markdown('A continuación, puede encontrar la normativa legal vigente y demás documentos de interés para el tema de reformas al presupuesto.')
+         st.markdown("""
+                    💡 **Enlaces**
+                        
+                    - [**RESOLUCIÓN ORDENANZA PROVINCIAL No. 06-CPP-2023-2027**](https://docs.snowflake.com/) 
+                    - [**ADMINISTRATIVA No. 03-SG-2022**](https://docs.snowflake.com/) 
+                    - [**RESOLUCIÓN ADMINISTRATIVA No. 08-DGSG-2022**](https://docs.snowflake.com/) 
+                    - [**MEMORANDO 55-DP-23**](https://docs.snowflake.com/) 
                     """)
-        
-    st.info("""
-                Se describen con más detalle estos componentes en el manual de uso [Documentacion Reformas](https://docs.snowflake.com/). 
-                Ademas esta incluida la información del sistema utilizado y sus beneficios.
-                """)
-        
-    st.markdown("""
-                    En el caso de tener algun tipo de problema comuniquese con la coordinacion de Planificación. 🚀
-                
-                    A continuación se detalla cada opción de reforma:
 
-                """)
-    
-    
 def Interna():
     def main():
         #CARGAMOS LAS BASES
@@ -93,10 +111,9 @@ def Interna():
         df_odoo = pd.DataFrame(odoo)
         df_mt = pd.DataFrame(metas)
         #ENCABEZADO
-        st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA AL POA INTERNA </h1>", unsafe_allow_html=True)
-        st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(En la misma Unidad)</h4>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA INTERNA </h1>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>“Dentro de la misma Dirección/Unidad”</h4>", unsafe_allow_html=True)
        
-        #st.header("🔄 Reforma interna", help="Reforma en la misma Unidad")
             
         create_tab, tips_tab = \
             st.tabs(["Resumen", "❄️Pasos"])
@@ -212,10 +229,7 @@ def Interna():
             height=350, 
             fit_columns_on_grid_load=True,
             theme='streamlit',
-            #data_return_mode=return_mode_value, 
-            #update_mode=update_mode_value,
-            allow_unsafe_jscode=True, 
-            #key='an_unique_key_xZs151',
+            allow_unsafe_jscode=True,
             reload_data=reload_data,
             #no agregar cambia la columna de float a str
             #try_to_convert_back_to_original_types=False
@@ -289,28 +303,19 @@ def Interna():
                theme='alpine',
                height=120)
         st.markdown("---")
-
-        #DIVIDIMOS EL TABLERO EN 3 SECCIONES
-        #left_column, center_column, right_column = st.columns(3)
-        #with left_column:
-        #    st.subheader("Total Codificado: ")
-        #    st.subheader(f"US $ {total_cod:,}")
-        #    #st.dataframe(df_od.stack())
-            #st.write(df_od)
-        
-        #with center_column:
-        #    st.subheader("Nuevo Codificado: ")
-        #    st.subheader(f"US $ {total_tot+nuevo_p:,}")
-
-        #with right_column:
-        #    st.subheader("Total Increm/Dismi(): ")
-        #    st.subheader(f"US $ {total_mov+nuevo_p:,}")
-
-
+        #TABLA DE METAS
         st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
-        # Mostrar la tabla con la extensión st_aggrid
-        #with st.expander(f"🆕  Modificar metas de los proyectos de {direc}", expanded=False): 
-        edit_df = AgGrid(df_mt, editable=True)
+        
+        #df_mt1 = pd.DataFrame([df_mt])
+        gbmt = GridOptionsBuilder.from_dataframe(df_mt)
+        gbmt.configure_column('Proyecto', minWidth =250, editable=False )
+        gbmt.configure_column('Metas', minWidth =250, editable=False )
+        gbmt.configure_column('Nueva Meta', minWidth =250, editable=True )
+        gbmt.configure_column('Observación', minWidth =230, editable=True )
+
+        edit_df = AgGrid(df_mt,
+                         gridOptions=gbmt.build(),
+                         height=350)
                             #reload_data=reload_data,)
         edit_df = pd.DataFrame(edit_df['data'])
 
@@ -318,8 +323,6 @@ def Interna():
             st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado y nuevo codificado son diferentes</h3></div>', unsafe_allow_html=True)
         else:
             st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado y nuevo codificado son iguales</h3></div>', unsafe_allow_html=True)
-
-
        
         try:
             edited_rows = edited_df[edited_df['Movimiento'] != 0]
@@ -351,138 +354,133 @@ def Interna():
         total_row = pd.DataFrame([['Total', sum_row['Movimiento']]], 
                             columns=['Proyecto, Partida Presupuestaria, Estructura','Movimiento'], index=['Total'])
         nuevo_df = pd.concat([nuevo_df, total_row])
-        nuevo_df = nuevo_df
+        dfp1 = nuevo_df
         #Creamos una nueva tabla para las metas
-        meta_filtro = ['Proyecto','Metas','Nueva Meta']
-        ed_df = edit_rows[meta_filtro]
+        meta_filtro = ['Proyecto','Metas','Nueva Meta','Observación']
+        dfp3 = edit_rows[meta_filtro]
         result2 = result
+        #nueva partida
         result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
         resul_filtro=['Proyecto, Estructura','Incremento']
         result2=result2[resul_filtro]
+        sum_res=result2[['Incremento']].sum()
+        total_res = pd.DataFrame([['Total', sum_res['Incremento']]], 
+                            columns=['Proyecto, Estructura','Incremento'], index=['Total'])
+        result2 = pd.concat([result2, total_res])
+        dfp2=result2
 
         if total_cod == total_tot+nuevo_p:
             if export_as_pdf:
                 now = datetime.now()
-                fecha_hora = now.strftime("%Y%m%d%H%M")
-    
+                fecha_hora = now.strftime("%Y%m%d%H%M")    
                 st.write('Descargando... ¡Espere un momento!')
                 
-                pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=15)
-                pdf.add_page()
-                image_path = "logo GadPP.png"
-                image = Image.open(image_path)
-                img_width, img_height = image.size
-
-                # Definir el tamaño de la imagen en el PDF (puedes ajustar según sea necesario)
-                pdf.image(image_path, x=10, y=10, w=38, h=0)
-
-                # Obtener fecha y hora actual para el título
-                pdf.set_title(f"Reforma Presupuesto - {fecha_hora}")
-                # Escribir el título en el PDF
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 30, txt=f"Reforma Presupuesto - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 0, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths = [150, 20]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(nuevo_df.columns):
-                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-                pdf.ln()
-
-                for _, row in nuevo_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                pdf.ln(10)
-                pdf.cell(200, 30, txt=f"Nueva Partida", ln=True, align="C")
-                for i, col in enumerate(result2.columns):
-                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-                pdf.ln()
-
-                for _, row in result2.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
                 
-                pdf.add_page()
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 15, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths2 = [60, 60,60]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(ed_df.columns):
-                    pdf.cell(col_widths2[i], 14, str(col), border=1, align='C')
-                pdf.ln()
+                def export_to_pdf(dfp1, dfp2, dfp3):
+                        # Crear un objeto BytesIO para almacenar el PDF
+                    pdf_buffer = BytesIO()
+                            # Crear un objeto SimpleDocTemplate para el PDF
+                    #doc = SimpleDocTemplate("output.pdf", pagesize=custom_page_size, leftMargin=50, rightMargin=50, topMargin=50, bottomMargin=50)
 
-                for _, row in ed_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths2[i], 4, txt=value, border=1)
-                            pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                
+                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                            # Obtener estilos de texto predefinidos
+                    styles = getSampleStyleSheet()
+                    # Agregar título a la página
+                    title = f"Reforma Interna-{fecha_hora}"
+                    title_style = styles['Title']
+                    title_style.spaceAfter = 12
+                    title_style.spaceBefore = 22
+                    title_paragraph = Paragraph(title, title_style)
+                    
+                    subtitle_text = f"{direc} - Presupuesto"
+                    subtitle_paragraph = Paragraph(subtitle_text, title_style)
 
+                    title2 = f"{direc} - Nueva Partida"
+                    title2_paragraph = Paragraph(title2, title_style)
 
-                # Guardar el PDF
-                #pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
+                    title3 = f"{direc} - Metas"
+                    title3_paragraph = Paragraph(title3, title_style)         
+                    
+                    # Agregar imagen a la página
+                    img_path = "logo GadPP.png"  # Reemplaza con la ruta de tu imagen
+                    image = Image(img_path, width=100, height=100) 
+
+                            # Convertir DataFrame a lista de listas para la tabla
+                    data1 = [dfp1.columns.tolist()] + [configure_cell(dfp1, row) for _, row in dfp1.iterrows()]  # Agregar una fila con los nombres de las variables
+        # Crear la tabla con los datos del DataFrame
+                    table1 = Table(data1, repeatRows=1, colWidths=[400] + [None] * (len(dfp1.columns) - 1))
+
+                            # Establecer estilos para la tabla
+                    table1.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear el contenido al centro
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  # Fuente en negrita para la primera fila (encabezado)
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Agregar espacio inferior a la primera fila
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  # Agregar bordes a la tabla
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  # Espacio después de cada fila
+                    ]))
+
+                    data2 = [dfp2.columns.tolist()] + [configure_cell(dfp2, row) for _, row in dfp2.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table2 = Table(data2, repeatRows=1, colWidths=[400] + [None] * (len(dfp2.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table2.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+
+                    data3 = [dfp3.columns.tolist()] + [configure_cellmetas(dfp3, row) for _, row in dfp3.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table3 = Table(data3, repeatRows=1, colWidths=[200] + [None] * (len(dfp3.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table3.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+                # Construir el PDF con la tabla
+                    frames = [Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')]
+                    template = PageTemplate(id='encabezado_izquierdo', frames=frames, onPage=lambda canvas, doc, **kwargs: canvas.drawImage(img_path, doc.leftMargin-40, doc.height+55, width=120, height=90, preserveAspectRatio=True))
+                    doc.addPageTemplates([template])
+                    doc.build([title_paragraph, subtitle_paragraph, table1,title2_paragraph, table2,title3_paragraph, table3])
+                            # Obtener el contenido del BytesIO
+                    pdf_content = pdf_buffer.getvalue()
+                            # Cerrar el BytesIO
+                    pdf_buffer.close()
+
+                    return pdf_content
+
+                def configure_cell(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    first_col_text = str(row[df.columns[0]])
+                    first_col_text = '\n'.join([first_col_text[j:j+20] for j in range(0, len(first_col_text), 20)])
+                    return [Paragraph(first_col_text, styles['Normal'], encoding='utf-8')] + [str(row[col]) for col in df.columns[1:]]
+            
+                def configure_cellmetas(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    # Aplicar el formato con '\n' a todas las columnas
+                    formatted_columns = [('\n'.join(str(row[col])[j:j+20] for j in range(0, len(str(row[col])), 20)), styles['Normal']) for col in df.columns]
+                    # Devolver una lista de objetos Paragraph para cada celda
+                    return [Paragraph(text, style, encoding='utf-8') for text, style in formatted_columns]
+
+        
+
+                if export_as_pdf:
+                            # Llamar a la función para exportar DataFrame a PDF
+                    pdf_content = export_to_pdf(dfp1, dfp2, dfp3)
+                                    # Descargar el PDF
+                    st.download_button('Descargar PDF', pdf_content, file_name='tabla_exportada.pdf', key='download_button')
+                                    # Mensaje de éxito
+                    st.success('Tabla exportada y PDF descargado exitosamente.') 
+
                 #pdf.output(pdf_output)
                 archivo_xlsx = descargar_xlsx(edited_rows, edit_rows, result)
                 st.download_button(
@@ -494,10 +492,7 @@ def Interna():
                 )
 
                 
-                html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
-
-                st.markdown(html, unsafe_allow_html=True)
-#                st.success(f"Se ha generado el PDF: {pdf_output}")
+                
         else:
             #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
             st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
@@ -667,31 +662,23 @@ def Externa():
            height=120)
     st.markdown("---")
 
-    #DIVIDIMOS EL TABLERO EN 3 SECCIONES
-    #left_column, center_column, right_column = st.columns(3)
-    #with left_column:
-    #    st.subheader("Total Codificado: ")
-    #    st.subheader(f"US $ {total_cod:,}")
-    #    
-    
-   #with center_column:
-    #    st.subheader("Nuevo Codificado: ")
-    #    st.subheader(f"US $ {total_tot:,}")
-
-   # with right_column:
-    #    st.subheader("Total increme/dismin: ")
-    #    st.subheader(f"US $ {total_mov:,}")
-
+   
     st.markdown("---")
 
     st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {direc}</h3>", unsafe_allow_html=True)
     # Mostrar la tabla con la extensión st_aggrid
     with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
-        edit_df = AgGrid(df_mt, editable=True,
-                        reload_data=reload_data,)
+        gbmt = GridOptionsBuilder.from_dataframe(df_mt)
+        gbmt.configure_column('Proyecto', minWidth =250, editable=False )
+        gbmt.configure_column('Metas', minWidth =250, editable=False )
+        gbmt.configure_column('Nueva Meta', minWidth =250, editable=True )
+        gbmt.configure_column('Observación', minWidth =230, editable=True )
+
+        edit_df = AgGrid(df_mt,
+                         gridOptions=gbmt.build(),
+                         height=350)
+                            #reload_data=reload_data,)
         edit_df = pd.DataFrame(edit_df['data'])
-
-
 
     #CERRAMOS LA SECCIÓN
     st.markdown("---")
@@ -717,6 +704,8 @@ def Externa():
     dfff= odf.loc[odf.Unidad == selec].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()
     dfff.rename(columns = {'Saldo Disponible': 'Saldo_Disponible'}, inplace= True)
     df_mtt= df_mt2.loc[df_mt2.Unidad == selec]
+    df_mtfil = ['Proyecto','Metas','Nueva Meta','Observación']
+    df_mtt = df_mtt[df_mtfil]
     #Creamos los Datos ha editar
     data2=dfff
     dfd2 = pd.DataFrame(data2)
@@ -795,35 +784,21 @@ def Externa():
            height=120)
     st.markdown("---")
 
-    #DIVIDIMOS EL TABLERO EN 3 SECCIONES
-    #left_column, center_column, right_column = st.columns(3)
-    #with left_column:
-    #    st.subheader("Total Codificado: ")
-    #    st.subheader(f"US $ {total_cod2:,}")
-    
-    #with center_column:
-    #    st.subheader("Nuevo Codificado: ")
-    #    st.subheader(f"US $ {total_tot2+nuevo_p:,}")
-
-    #with right_column:
-     #   st.subheader("Total increme/dismin: ")
-    #    st.subheader(f"US $ {total_mov2+nuevo_p:,}")
-
     st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {selec} </h3>", unsafe_allow_html=True)
     # Mostrar la tabla con la extensión st_aggrid
     with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
-        edit_dfd = AgGrid(df_mtt, 
-                        editable=True,
-                        #reload_data=reload_data
-                        )
+        gbmtd = GridOptionsBuilder.from_dataframe(df_mtt)
+        gbmtd.configure_column('Proyecto', minWidth =250, editable=False )
+        gbmtd.configure_column('Metas', minWidth =250, editable=False )
+        gbmtd.configure_column('Nueva Meta', minWidth =250, editable=True )
+        gbmtd.configure_column('Observación', minWidth =230, editable=True )
+
+        edit_dfd = AgGrid(df_mtt,
+                         gridOptions=gbmtd.build(),
+                         height=350)
+                            #reload_data=reload_data,)
         edit_dfd = pd.DataFrame(edit_dfd['data'])
-
-    
-    
-    
-    #CERRAMOS LA SECCIÓN
-   
-
+        
 
     if total_mov2+nuevo_p < 0:
         st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a restado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
@@ -880,196 +855,194 @@ def Externa():
     total_row2 = pd.DataFrame([['Total', sum_row2['Movimiento']]], 
                          columns=['Proyecto, Partida Presupuestaria, Estructura','Movimiento'], index=['Total'])
     
-    nuevo_df = pd.concat([nuevo_df, total_row])
-    nuevo_df2 = pd.concat([nuevo_df2, total_row2])
+    dfp1 = pd.concat([nuevo_df, total_row])
+    dfp4 = pd.concat([nuevo_df2, total_row2])
     
-    # TABLA NUEVO
+    # NUEVA PARTIDA
     result_filtro1 = ['Proyecto','Estructura','Incremento']
     result2 = result[result_filtro1]
     result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
     resul_filtro=['Proyecto, Estructura','Incremento']
     result2=result2[resul_filtro]
+    sum_res=result2[['Incremento']].sum()
+    total_res = pd.DataFrame([['Total', sum_res['Incremento']]], 
+                            columns=['Proyecto, Estructura','Incremento'], index=['Total'])
+    result2 = pd.concat([result2, total_res])
+    dfp2=result2
 
     #Creamos una nueva tabla para las metas
-    meta_filtro = ['Proyecto','Metas','Nueva Meta']
-    ed_df = edit_rows[meta_filtro]
-    ed_df2 = edit_rows2[meta_filtro]
+    meta_filtro = ['Proyecto','Metas','Nueva Meta','Observación']
+    dfp3 = edit_rows[meta_filtro]
+    dfp5 = edit_rows2[meta_filtro]
 
     if total_mov2+nuevo_p == -(total_mov):
-        if export_as_pdf:
-            now = datetime.now()
-            fecha_hora = now.strftime("%Y%m%d%H%M")
-
-            pdf = FPDF()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.add_page()
-            # Obtener fecha y hora actual para el título
-            pdf.set_title(f"Reforma Presupuesto - {fecha_hora}")
-            # Escribir el título en el PDF
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(200, 10, txt=f"Reforma Presupuesto - {fecha_hora}", ln=True, align="C")
-            pdf.cell(200, 15, txt=f"De: {direc}", ln=True, align="C")
-            pdf.ln(10)
-            # Anchos de columna para el DataFrame en el PDF
-            col_widths = [150, 20]  # Anchos de columna fijos
-            # Obtener anchos de columna dinámicos basados en el contenido
-            pdf.set_font("Arial", size=7)
-            for i, col in enumerate(nuevo_df.columns):
-                pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-            pdf.ln()
-
-            for _, row in nuevo_df.iterrows():
-                a=0
-                b=0
-                for i, value in enumerate(row):
-                    # Convertir el valor a string antes de la verificación
-                    value = str(value)
-                    if len(value) > 25:
-                        x = pdf.get_x()  # Guardar la posición X actual
-                        y = pdf.get_y()  # Guardar la posición Y actual
-                        pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                        pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                    else:
-                        pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                pdf.ln()
-            
-            pdf.add_page()
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(200, 10, txt=f"Reforma Presupuesto - {fecha_hora}", ln=True, align="C")
-            pdf.cell(200, 15, txt=f"Para:  {selec}", ln=True, align="C")
-            pdf.ln(10)
-            # Anchos de columna para el DataFrame en el PDF
-            #col_widths = [150, 20]  # Anchos de columna fijos
-            # Obtener anchos de columna dinámicos basados en el contenido
-            pdf.set_font("Arial", size=7)
-            for i, col in enumerate(nuevo_df2.columns):
-                pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-            pdf.ln()
-
-            for _, row in nuevo_df2.iterrows():
-                a=0
-                b=0
-                for i, value in enumerate(row):
-                    # Convertir el valor a string antes de la verificación
-                    value = str(value)
-                    if len(value) > 25:
-                        x = pdf.get_x()  # Guardar la posición X actual
-                        y = pdf.get_y()  # Guardar la posición Y actual
-                        pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                        pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                    else:
-                        pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                pdf.ln()
-           
-            pdf.cell(200, 30, txt=f"Nueva Partida", ln=True, align="C")
-            for i, col in enumerate(result2.columns):
-                pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-            pdf.ln()
-
-            for _, row in result2.iterrows():
-                a=0
-                b=0
-                for i, value in enumerate(row):
-                    value = str(value)
-                    if len(value) > 25:
-                        x = pdf.get_x()  # Guardar la posición X actual
-                        y = pdf.get_y()  # Guardar la posición Y actual
-                        pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                        pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                    else:
-                        pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                pdf.ln()
-
-            pdf.add_page()
-            pdf.set_font("Arial", 'B', 16)
-            pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-            pdf.cell(200, 15, txt=f"{direc}", ln=True, align="C")
-            pdf.ln(10)
-            # Anchos de columna para el DataFrame en el PDF
-            col_widths2 = [60, 60,60]  # Anchos de columna fijos
-            # Obtener anchos de columna dinámicos basados en el contenido
-            pdf.set_font("Arial", size=7)
-            for i, col in enumerate(ed_df.columns):
-                pdf.cell(col_widths2[i], 10, str(col), border=1, align='C')
-            pdf.ln()
-
-            for _, row in ed_df.iterrows():
-                a=0
-                b=0
-                for i, value in enumerate(row):
-                    # Convertir el valor a string antes de la verificación
-                    value = str(value)
-                    if len(value) > 25:
-                        x = pdf.get_x()  # Guardar la posición X actual
-                        y = pdf.get_y()  # Guardar la posición Y actual
-                        pdf.multi_cell(col_widths2[i], 5, txt=value, border=1)
-                        pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-                    #    a = 1
-                    #   b = len(value)/4
-                    #elif a == 1:
-                    #    x = pdf.get_x()  # Guardar la posición X actual
-                    #    y = pdf.get_y()  # Guardar la posición Y actual
-                    #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                    #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                    #    a = 1
-                    else:
-                        pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-                pdf.ln()
-
-            #pdf.add_page()
-            #pdf.set_font("Arial", 'B', 16)
-            #pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-            #pdf.cell(200, 15, txt=f"{selec}", ln=True, align="C")
-            #pdf.ln(10)
-            # Anchos de columna para el DataFrame en el PDF
-            #col_widths2 = [60, 60,60]  # Anchos de columna fijos
-            # Obtener anchos de columna dinámicos basados en el contenido
-            #pdf.set_font("Arial", size=7)
-            #for i, col in enumerate(ed_df2.columns):
-            #    pdf.cell(col_widths2[i], 10, str(col), border=1, align='C')
-            #pdf.ln()
-
-            #for _, row in ed_df2.iterrows():
-            #    a=0
-            #    b=0
-            #    for i, value in enumerate(row):
-                    # Convertir el valor a string antes de la verificación
-            #        value = str(value)
-            #        if len(value) > 25:
-            #            x = pdf.get_x()  # Guardar la posición X actual
-            #            y = pdf.get_y()  # Guardar la posición Y actual
-            #            pdf.multi_cell(col_widths2[i], 5, txt=value, border=1)
-            #            pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-            #        else:
-            #            pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-            #    pdf.ln()
-            
-            archivo_xlsx = descargar_xlsx(edited_rows,edited_rows2, edit_rows,edit_rows2, result)
-            st.download_button(
-                    label="Haz clic para descargar",
-                    data=archivo_xlsx.read(),
-                    key="archivo_xlsx",
-                    file_name=f"Reforma_{fecha_hora}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+            if export_as_pdf:
+                now = datetime.now()
+                fecha_hora = now.strftime("%Y%m%d%H%M")    
+                st.write('Descargando... ¡Espere un momento!')
                 
-            html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
-            st.markdown(html, unsafe_allow_html=True)
+                
+                def export_to_pdf(dfp1, dfp2, dfp3,dfp4,dfp5):
+                        # Crear un objeto BytesIO para almacenar el PDF
+                    pdf_buffer = BytesIO()
+                            # Crear un objeto SimpleDocTemplate para el PDF
+                    #doc = SimpleDocTemplate("output.pdf", pagesize=custom_page_size, leftMargin=50, rightMargin=50, topMargin=50, bottomMargin=50)
+
+                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                            # Obtener estilos de texto predefinidos
+                    styles = getSampleStyleSheet()
+                    # Agregar título a la página
+                    title = f"Reforma Externa-{fecha_hora}"
+                    title_style = styles['Title']
+                    title_style.spaceAfter = 12
+                    title_style.spaceBefore = 22
+                    title_paragraph = Paragraph(title, title_style)
+                    
+                    subtitle_text = f"De: {direc}-Presupuesto"
+                    subtitle_paragraph = Paragraph(subtitle_text, title_style)
+
+                    subtitle_text2 = f"Para: {selec}-Presupuesto"
+                    subtitle2_paragraph = Paragraph(subtitle_text2, title_style)
+
+                    title2 = f"Nueva Partida - {selec}"
+                    title2_paragraph = Paragraph(title2, title_style)
+
+                    title3 = f"{direc} - Reforma metas"
+                    title3_paragraph = Paragraph(title3, title_style)         
+                    
+                    title4 = f"{selec} - Reforma metas"
+                    title4_paragraph = Paragraph(title4, title_style)         
+
+                    # Agregar imagen a la página
+                    img_path = "logo GadPP.png"  # Reemplaza con la ruta de tu imagen
+                    image = Image(img_path, width=100, height=100) 
+
+                            # Convertir DataFrame a lista de listas para la tabla
+                    data1 = [dfp1.columns.tolist()] + [configure_cell(dfp1, row) for _, row in dfp1.iterrows()]  # Agregar una fila con los nombres de las variables
+        # Crear la tabla con los datos del DataFrame
+                    table1 = Table(data1, repeatRows=1, colWidths=[400] + [None] * (len(dfp1.columns) - 1))
+
+                            # Establecer estilos para la tabla
+                    table1.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear el contenido al centro
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  # Fuente en negrita para la primera fila (encabezado)
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Agregar espacio inferior a la primera fila
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  # Agregar bordes a la tabla
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  # Espacio después de cada fila
+                    ]))
+
+                    data4 = [dfp4.columns.tolist()] + [configure_cell(dfp4, row) for _, row in dfp4.iterrows()]  # Agregar una fila con los nombres de las variables
+        # Crear la tabla con los datos del DataFrame
+                    table4 = Table(data4, repeatRows=1, colWidths=[400] + [None] * (len(dfp4.columns) - 1))
+
+                            # Establecer estilos para la tabla
+                    table4.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear el contenido al centro
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  # Fuente en negrita para la primera fila (encabezado)
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Agregar espacio inferior a la primera fila
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  # Agregar bordes a la tabla
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  # Espacio después de cada fila
+                    ]))
+
+                    data2 = [dfp2.columns.tolist()] + [configure_cell(dfp2, row) for _, row in dfp2.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table2 = Table(data2, repeatRows=1, colWidths=[400] + [None] * (len(dfp2.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table2.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+
+                    data3 = [dfp3.columns.tolist()] + [configure_cellmetas(dfp3, row) for _, row in dfp3.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table3 = Table(data3, repeatRows=1, colWidths=[200] + [None] * (len(dfp3.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table3.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+                    data5 = [dfp5.columns.tolist()] + [configure_cellmetas(dfp5, row) for _, row in dfp5.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table5 = Table(data5, repeatRows=1, colWidths=[200] + [None] * (len(dfp5.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table5.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+                # Co
+                # Construir el PDF con la tabla
+                    frames = [Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')]
+                    template = PageTemplate(id='encabezado_izquierdo', frames=frames, onPage=lambda canvas, doc, **kwargs: canvas.drawImage(img_path, doc.leftMargin-40, doc.height+55, width=120, height=90, preserveAspectRatio=True))
+                    doc.addPageTemplates([template])
+                    doc.build([title_paragraph, subtitle_paragraph, table1,title3_paragraph, table3, subtitle2_paragraph, table4,title2_paragraph, table2,title4_paragraph,table5])
+                            # Obtener el contenido del BytesIO
+                    pdf_content = pdf_buffer.getvalue()
+                            # Cerrar el BytesIO
+                    pdf_buffer.close()
+
+                    return pdf_content
+
+                def configure_cell(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    first_col_text = str(row[df.columns[0]])
+                    first_col_text = '\n'.join([first_col_text[j:j+20] for j in range(0, len(first_col_text), 20)])
+                    return [Paragraph(first_col_text, styles['Normal'], encoding='utf-8')] + [str(row[col]) for col in df.columns[1:]]
+            
+                def configure_cellmetas(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    # Aplicar el formato con '\n' a todas las columnas
+                    formatted_columns = [('\n'.join(str(row[col])[j:j+20] for j in range(0, len(str(row[col])), 20)), styles['Normal']) for col in df.columns]
+                    # Devolver una lista de objetos Paragraph para cada celda
+                    return [Paragraph(text, style, encoding='utf-8') for text, style in formatted_columns]
+
+        
+
+                if export_as_pdf:
+                            # Llamar a la función para exportar DataFrame a PDF
+                    pdf_content = export_to_pdf(dfp1, dfp2, dfp3,dfp4,dfp5)
+                                    # Descargar el PDF
+                    st.download_button('Descargar PDF', pdf_content, file_name='tabla_exportada.pdf', key='download_button')
+                                    # Mensaje de éxito
+                    st.success('Tabla exportada y PDF descargado exitosamente.') 
+                
+                archivo_xlsx = descargar_xlsx(edited_rows,edited_rows2, edit_rows,edit_rows2, result)
+                st.download_button(
+                        label="Haz clic para descargar",
+                        data=archivo_xlsx.read(),
+                        key="archivo_xlsx",
+                        file_name=f"Reforma_{fecha_hora}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+                    
+
     else:
-        st.warning('La disminución e incremento realizadas tienen incosistencias revisar para descargar.')
-        #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
+            st.warning('La disminución e incremento realizadas tienen incosistencias revisar para descargar.')
+            #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         
 
 def Liberación ():
-        #CARGAMOS LAS BASES
+
         odoo = pd.read_excel("tabla_presupuesto.xlsx")
         metas = pd.read_excel("tabla_metas.xlsx")
         df_odoo = pd.DataFrame(odoo)
         df_mt = pd.DataFrame(metas)
-         
         #ENCABEZADO
-        st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>➖ REFORMA AL POA LIBERACIÓN DE VALORES </h1>", unsafe_allow_html=True)
-        st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(Se solicita liberar presupuesto a la Institución)</h4>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA LIBERACIÓN </h1>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(En la misma Unidad)</h4>", unsafe_allow_html=True)
        
             
         create_tab, tips_tab = \
@@ -1077,18 +1050,19 @@ def Liberación ():
         with create_tab:
             st.markdown("""
 
-                        Corresponde a la Reforma al POA en que se modifica el valor codificado de la Unidad (disminuye) por liberación de valores, y afecta:
-
-                        - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos de la unidad, y/o
+                        Corresponde a la Reforma al POA en que el valor codificado de la Unidad no se modifica, las reformas/modificaciones, se realizan únicamente entre actividades de proyectos de la misma Unidad, y afecta:
+                        
+                        - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos; y/o
                         - A la **programación física**, por modificación o no de las metas de los proyectos.
 
-                        Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado, con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
-
-                                                
+                        Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
+                        
                         """
                     )
             st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)
-                        
+
+
+
         with tips_tab:
             st.markdown("""
                     💡 **Pasos para realizar una reforma interna**
@@ -1109,11 +1083,11 @@ def Liberación ():
         #AGRUPAMOS LAS UNIDADES
         direc = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
         #FILTRAMOS COLUMNAS 
-        df_od= df_odoo.loc[df_odoo.Unidad == direc].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()##.agg({'Codificado':'sum'},{'Saldo_Disponible':'sum'}) #
+        df_od= df_odoo.loc[df_odoo.Unidad == direc].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()
         df_od.rename(columns = {'Saldo Disponible': 'Saldo_Disponible'}, inplace= True)
         df_mt= df_mt.loc[df_mt.Unidad == direc]
         df_mtfil = ['Proyecto','Metas','Nueva Meta','Observación']
-        df_mt = df_mt[df_mtfil] 
+        df_mt = df_mt[df_mtfil]        
         df = pd.DataFrame(df_od)
         df = agregar_columnas(df)
         
@@ -1185,13 +1159,8 @@ def Liberación ():
             height=350, 
             fit_columns_on_grid_load=True,
             theme='streamlit',
-            #data_return_mode=return_mode_value, 
-            #update_mode=update_mode_value,
-            allow_unsafe_jscode=True, 
-            #key='an_unique_key_xZs151',
-            reload_data=reload_data,
-            #no agregar cambia la columna de float a str
-            #try_to_convert_back_to_original_types=False
+            allow_unsafe_jscode=True,
+            reload_data=reload_data
         )
        
         # Si se detectan cambios, actualiza el DataFrame
@@ -1221,65 +1190,55 @@ def Liberación ():
                             #reload_data=reload_data,)
         #edit_df = pd.DataFrame(edit_df['data'])
 
-       
+
         #TOTALES
         total_cod = int(edited_df['Codificado'].sum())
         total_mov = int(edited_df['Movimiento'].sum())
         total_tot = int(edited_df['TOTAL'].sum())
-        #nuevo_p = int(result['Incremento'].sum())
+       
 
         total_row = {
             'PROYECTO': 'Total',  # No se calcula el total para la columna de texto
             'Total_Codificado': df['Codificado'].sum(),
             'Total_Saldo': df['Saldo_Disponible'].sum(),
-            'Tot_Increm/Dismi': edited_df['Movimiento'].sum(),
-            'Total_Nuev_Codif':   edited_df['TOTAL'].sum() 
+            'Tot_Increm/Dismi': edited_df['Movimiento'].sum() ,
+            'Total_Nuev_Codif': edited_df['TOTAL'].sum() 
         }
         total_df = pd.DataFrame([total_row])
-        gbt = GridOptionsBuilder.from_dataframe(total_df) 
+        gbt = GridOptionsBuilder.from_dataframe(total_df)
         gbt.configure_column('PROYECTO', minWidth =500 )
         gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
         gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =135, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
         gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
         gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =130, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
-
+        
         AgGrid(total_df,
                gridOptions=gbt.build(),
                theme='alpine',
                height=120)
         st.markdown("---")
 
-        #DIVIDIMOS EL TABLERO EN 3 SECCIONES
-        #left_column, center_column, right_column = st.columns(3)
-        #with left_column:
-        #    st.subheader("Total Codificado: ")
-        #    st.subheader(f"US $ {total_cod:,}")
-        #    #st.dataframe(df_od.stack())
-            #st.write(df_od)
-        
-        #with center_column:
-        #    st.subheader("Nuevo Codificado: ")
-        #    st.subheader(f"US $ {total_tot+nuevo_p:,}")
-
-        #with right_column:
-        #    st.subheader("Total Increm/Dismi(): ")
-        #    st.subheader(f"US $ {total_mov+nuevo_p:,}")
-
-
         st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
         # Mostrar la tabla con la extensión st_aggrid
         #with st.expander(f"🆕  Modificar metas de los proyectos de {direc}", expanded=False): 
-        edit_df = AgGrid(df_mt, editable=True)
+        gbmt = GridOptionsBuilder.from_dataframe(df_mt)
+        gbmt.configure_column('Proyecto', minWidth =250, editable=False )
+        gbmt.configure_column('Metas', minWidth =250, editable=False )
+        gbmt.configure_column('Nueva Meta', minWidth =250, editable=True )
+        gbmt.configure_column('Observación', minWidth =230, editable=True )
+
+        edit_df = AgGrid(df_mt,
+                         gridOptions=gbmt.build(),
+                         height=350)
                             #reload_data=reload_data,)
         edit_df = pd.DataFrame(edit_df['data'])
 
         if total_cod > total_tot:
-            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado es mayor al nuevo codificado</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado es mayor al nuevo codificado</h3></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado es menor o igual al nuevo codificado por tanto no se esta liberando el presupuesto</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado es menor o igual al nuevo codificado por tanto no se esta liberando el presupuesto</h3></div>', unsafe_allow_html=True)
 
 
-       
         try:
             edited_rows = edited_df[edited_df['Movimiento'] != 0]
             edit_rows = edit_df[edit_df['Nueva Meta'] != '-']
@@ -1309,108 +1268,110 @@ def Liberación ():
         total_row = pd.DataFrame([['Total', sum_row['Movimiento']]], 
                             columns=['Proyecto, Partida Presupuestaria, Estructura','Movimiento'], index=['Total'])
         nuevo_df = pd.concat([nuevo_df, total_row])
-        nuevo_df = nuevo_df
+        dfp1 = nuevo_df
         #Creamos una nueva tabla para las metas
-        meta_filtro = ['Proyecto','Metas','Nueva Meta']
-        ed_df = edit_rows[meta_filtro]
+        meta_filtro = ['Proyecto','Metas','Nueva Meta','Observación']
+        dfp3 = edit_rows[meta_filtro]
         
+
+                
 
         if total_cod > total_tot:
             if export_as_pdf:
                 now = datetime.now()
-                fecha_hora = now.strftime("%Y%m%d%H%M")
-    
+                fecha_hora = now.strftime("%Y%m%d%H%M")    
                 st.write('Descargando... ¡Espere un momento!')
                 
-                pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=15)
-                pdf.add_page()
-                image_path = "logo GadPP.png"
-                image = Image.open(image_path)
-                img_width, img_height = image.size
-
-                # Definir el tamaño de la imagen en el PDF (puedes ajustar según sea necesario)
-                pdf.image(image_path, x=10, y=10, w=38, h=0)
-
-                # Obtener fecha y hora actual para el título
-                pdf.set_title(f"Reforma Presupuesto - {fecha_hora}")
-                # Escribir el título en el PDF
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 30, txt=f"Reforma Presupuesto - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 0, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths = [150, 20]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(nuevo_df.columns):
-                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-                pdf.ln()
-
-                for _, row in nuevo_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                pdf.ln(10)
                 
-                pdf.add_page()
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 15, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths2 = [60, 60,60]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(ed_df.columns):
-                    pdf.cell(col_widths2[i], 14, str(col), border=1, align='C')
-                pdf.ln()
+                def export_to_pdf(dfp1, dfp3):
+                        # Crear un objeto BytesIO para almacenar el PDF
+                    pdf_buffer = BytesIO()
+                            # Crear un objeto SimpleDocTemplate para el PDF
+                    #doc = SimpleDocTemplate("output.pdf", pagesize=custom_page_size, leftMargin=50, rightMargin=50, topMargin=50, bottomMargin=50)
 
-                for _, row in ed_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths2[i], 4, txt=value, border=1)
-                            pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                
+                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                            # Obtener estilos de texto predefinidos
+                    styles = getSampleStyleSheet()
+                    # Agregar título a la página
+                    title = f"Reforma Liberación - {fecha_hora}"
+                    title_style = styles['Title']
+                    title_style.spaceAfter = 12
+                    title_style.spaceBefore = 22
+                    title_paragraph = Paragraph(title, title_style)
+                                                      
+                    subtitle_text = f"{direc} - Presupuesto"
+                    subtitle_paragraph = Paragraph(subtitle_text, title_style)
 
+                    title3 = f"{direc} - Metas"
+                    title3_paragraph = Paragraph(title3, title_style) 
+                    
+                    # Agregar imagen a la página
+                    img_path = "logo GadPP.png"  # Reemplaza con la ruta de tu imagen
+                    image = Image(img_path, width=100, height=100) 
 
-                # Guardar el PDF
-                #pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
+                            # Convertir DataFrame a lista de listas para la tabla
+                    data1 = [dfp1.columns.tolist()] + [configure_cell(dfp1, row) for _, row in dfp1.iterrows()]  # Agregar una fila con los nombres de las variables
+        # Crear la tabla con los datos del DataFrame
+                    table1 = Table(data1, repeatRows=1, colWidths=[400] + [None] * (len(dfp1.columns) - 1))
+
+                            # Establecer estilos para la tabla
+                    table1.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear el contenido al centro
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  # Fuente en negrita para la primera fila (encabezado)
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Agregar espacio inferior a la primera fila
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  # Agregar bordes a la tabla
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  # Espacio después de cada fila
+                    ]))
+
+                    data3 = [dfp3.columns.tolist()] + [configure_cellmetas(dfp3, row) for _, row in dfp3.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table3 = Table(data3, repeatRows=1, colWidths=[200] + [None] * (len(dfp3.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table3.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+                # Construir el PDF con la tabla
+                    frames = [Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')]
+                    template = PageTemplate(id='encabezado_izquierdo', frames=frames, onPage=lambda canvas, doc, **kwargs: canvas.drawImage(img_path, doc.leftMargin-40, doc.height+55, width=120, height=90, preserveAspectRatio=True))
+                    doc.addPageTemplates([template])
+                    doc.build([title_paragraph, subtitle_paragraph, table1,title3_paragraph, table3])
+                            # Obtener el contenido del BytesIO
+                    pdf_content = pdf_buffer.getvalue()
+                            # Cerrar el BytesIO
+                    pdf_buffer.close()
+
+                    return pdf_content
+
+                def configure_cell(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    first_col_text = str(row[df.columns[0]])
+                    first_col_text = '\n'.join([first_col_text[j:j+20] for j in range(0, len(first_col_text), 20)])
+                    return [Paragraph(first_col_text, styles['Normal'], encoding='utf-8')] + [str(row[col]) for col in df.columns[1:]]
+            
+                def configure_cellmetas(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    # Aplicar el formato con '\n' a todas las columnas
+                    formatted_columns = [('\n'.join(str(row[col])[j:j+20] for j in range(0, len(str(row[col])), 20)), styles['Normal']) for col in df.columns]
+                    # Devolver una lista de objetos Paragraph para cada celda
+                    return [Paragraph(text, style, encoding='utf-8') for text, style in formatted_columns]
+
+        
+
+                if export_as_pdf:
+                            # Llamar a la función para exportar DataFrame a PDF
+                    pdf_content = export_to_pdf(dfp1, dfp3)
+                                    # Descargar el PDF
+                    st.download_button('Descargar PDF', pdf_content, file_name='tabla_exportada.pdf', key='download_button')
+                                    # Mensaje de éxito
+                    st.success('Tabla exportada y PDF descargado exitosamente.') 
+
                 #pdf.output(pdf_output)
                 archivo_xlsx = descargar_xlsx(edited_rows, edit_rows)
                 st.download_button(
@@ -1422,16 +1383,15 @@ def Liberación ():
                 )
 
                 
-                html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
-
-                st.markdown(html, unsafe_allow_html=True)
-#                st.success(f"Se ha generado el PDF: {pdf_output}")
+                
         else:
             #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
             st.warning('No se puede descargar, porque no se esta liberando el presupuesto')    
 
+
 def Solicitud ():
         
+        #CARGAMOS LAS BASES
         odoo = pd.read_excel("tabla_presupuesto.xlsx")
         metas = pd.read_excel("tabla_metas.xlsx")
         df_odoo = pd.DataFrame(odoo)
@@ -1440,26 +1400,25 @@ def Solicitud ():
         st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>➕ REFORMA AL POA POR INCREMENTO DE PRESUPUESTO</h1>", unsafe_allow_html=True)
         st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>(Se solicita presupuesto a la Institución)</h4>", unsafe_allow_html=True)
        
-        #st.header("🔄 Reforma interna", help="Reforma en la misma Unidad")
             
         create_tab, tips_tab = \
             st.tabs(["Resumen", "❄️Pasos"])
         with create_tab:
             st.markdown("""
 
-                        Corresponde a la Reforma al POA en la que se modifica el valor codificado de la Unidad (solicitud de incremento), y afecta:
-                        - A la **programación presupuestaria**, por incremento al valor codificado asignado a la unidad, y/o
-                        - A la **programación física**, por modificación o no de las metas de los proyectos.
-                        Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado, con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
+                        Corresponde a la Reforma al POA en que el valor codificado de la Unidad no se modifica, las reformas/modificaciones, se realizan únicamente entre actividades de proyectos de la misma Unidad, y afecta:
                         
-                    
+                        - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos; y/o
+                        - A la **programación física**, por modificación o no de las metas de los proyectos.
+
+                        Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
+                        
                         """
                     )
-            
-            st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)            
+            st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)
 
-            
-                        
+
+
         with tips_tab:
             st.markdown("""
                     💡 **Pasos para realizar una reforma interna**
@@ -1480,9 +1439,11 @@ def Solicitud ():
         #AGRUPAMOS LAS UNIDADES
         direc = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
         #FILTRAMOS COLUMNAS 
-        df_od= df_odoo.loc[df_odoo.Unidad == direc].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()##.agg({'Codificado':'sum'},{'Saldo_Disponible':'sum'}) #
+        df_od= df_odoo.loc[df_odoo.Unidad == direc].groupby(['Unidad','PROYECTO','Código','Estructura'], as_index= False)[['Codificado', 'Saldo Disponible']].sum()
         df_od.rename(columns = {'Saldo Disponible': 'Saldo_Disponible'}, inplace= True)
         df_mt= df_mt.loc[df_mt.Unidad == direc]
+        df_mtfil = ['Proyecto','Metas','Nueva Meta','Observación']
+        df_mt = df_mt[df_mtfil]        
         df = pd.DataFrame(df_od)
         df = agregar_columnas(df)
         
@@ -1554,13 +1515,8 @@ def Solicitud ():
             height=350, 
             fit_columns_on_grid_load=True,
             theme='streamlit',
-            #data_return_mode=return_mode_value, 
-            #update_mode=update_mode_value,
-            allow_unsafe_jscode=True, 
-            #key='an_unique_key_xZs151',
-            reload_data=reload_data,
-            #no agregar cambia la columna de float a str
-            #try_to_convert_back_to_original_types=False
+            allow_unsafe_jscode=True,
+            reload_data=reload_data
         )
        
         # Si se detectan cambios, actualiza el DataFrame
@@ -1595,10 +1551,10 @@ def Solicitud ():
             dfnuevop = pd.DataFrame(columns=['Proyecto','Estructura','Incremento','Parroquia'])
             #colors = st.selectbox('Escoja la Unidad', options=df_odoo['Unidad'].unique())
             config = {
-                'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='large', options=df_od['PROYECTO'].unique()),
+                'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='medium', options=df_od['PROYECTO'].unique()),
                 'Estructura' : st.column_config.TextColumn('Estructura', width='large', required=True),
                 'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0, required=True),
-                'Parroquia' : st.column_config.TextColumn('Parroquia', width='large', required=True)
+                'Parroquia' : st.column_config.TextColumn('Parroquia', width='medium', required=True)
             }
 
             result = st.data_editor(dfnuevop, column_config = config, num_rows='dynamic')
@@ -1625,44 +1581,32 @@ def Solicitud ():
         gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =135, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
         gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
         gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =130, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
-
+        
         AgGrid(total_df,
                gridOptions=gbt.build(),
                theme='alpine',
                height=120)
         st.markdown("---")
 
-        #DIVIDIMOS EL TABLERO EN 3 SECCIONES
-        #left_column, center_column, right_column = st.columns(3)
-        #with left_column:
-        #    st.subheader("Total Codificado: ")
-        #    st.subheader(f"US $ {total_cod:,}")
-        #    #st.dataframe(df_od.stack())
-            #st.write(df_od)
-        
-        #with center_column:
-        #    st.subheader("Nuevo Codificado: ")
-        #    st.subheader(f"US $ {total_tot+nuevo_p:,}")
-
-        #with right_column:
-        #    st.subheader("Total Increm/Dismi(): ")
-        #    st.subheader(f"US $ {total_mov+nuevo_p:,}")
-
-
         st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
-        # Mostrar la tabla con la extensión st_aggrid
-        #with st.expander(f"🆕  Modificar metas de los proyectos de {direc}", expanded=False): 
-        edit_df = AgGrid(df_mt, editable=True)
-                            #reload_data=reload_data,)
+       
+        gbmt = GridOptionsBuilder.from_dataframe(df_mt)
+        gbmt.configure_column('Proyecto', minWidth =250, editable=False )
+        gbmt.configure_column('Metas', minWidth =250, editable=False )
+        gbmt.configure_column('Nueva Meta', minWidth =250, editable=True )
+        gbmt.configure_column('Observación', minWidth =230, editable=True )
+
+        edit_df = AgGrid(df_mt,
+                         gridOptions=gbmt.build(),
+                         height=350)
+
         edit_df = pd.DataFrame(edit_df['data'])
 
         if total_cod < total_tot+nuevo_p:
-            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado es menor al nuevo codificado</h3></div>', unsafe_allow_html=True)
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado es menor al nuevo codificado</h3></div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor total del codificado es mayor o igual al nuevo codificado</h3></div>', unsafe_allow_html=True)
-
-
-       
+            st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor total del codificado es mayor o igual al nuevo codificado</h3></div>', unsafe_allow_html=True)
+            
         try:
             edited_rows = edited_df[edited_df['Movimiento'] != 0]
             edit_rows = edit_df[edit_df['Nueva Meta'] != '-']
@@ -1693,138 +1637,135 @@ def Solicitud ():
         total_row = pd.DataFrame([['Total', sum_row['Movimiento']]], 
                             columns=['Proyecto, Partida Presupuestaria, Estructura','Movimiento'], index=['Total'])
         nuevo_df = pd.concat([nuevo_df, total_row])
-        nuevo_df = nuevo_df
+        dfp1 = nuevo_df
         #Creamos una nueva tabla para las metas
-        meta_filtro = ['Proyecto','Metas','Nueva Meta']
-        ed_df = edit_rows[meta_filtro]
+        meta_filtro = ['Proyecto','Metas','Nueva Meta','Observación']
+        dfp3 = edit_rows[meta_filtro]
         result2 = result
         result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
         resul_filtro=['Proyecto, Estructura','Incremento']
         result2=result2[resul_filtro]
+        sum_res=result2[['Incremento']].sum()
+        total_res = pd.DataFrame([['Total', sum_res['Incremento']]], 
+                            columns=['Proyecto, Estructura','Incremento'], index=['Total'])
+        result2 = pd.concat([result2, total_res])
+        dfp2=result2
+
 
         if total_cod < total_tot+nuevo_p:
             if export_as_pdf:
                 now = datetime.now()
-                fecha_hora = now.strftime("%Y%m%d%H%M")
-    
+                fecha_hora = now.strftime("%Y%m%d%H%M")    
                 st.write('Descargando... ¡Espere un momento!')
                 
-                pdf = FPDF()
-                pdf.set_auto_page_break(auto=True, margin=15)
-                pdf.add_page()
-                image_path = "logo GadPP.png"
-                image = Image.open(image_path)
-                img_width, img_height = image.size
-
-                # Definir el tamaño de la imagen en el PDF (puedes ajustar según sea necesario)
-                pdf.image(image_path, x=10, y=10, w=38, h=0)
-
-                # Obtener fecha y hora actual para el título
-                pdf.set_title(f"Reforma Presupuesto - {fecha_hora}")
-                # Escribir el título en el PDF
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 30, txt=f"Reforma Presupuesto - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 0, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths = [150, 20]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(nuevo_df.columns):
-                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-                pdf.ln()
-
-                for _, row in nuevo_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                pdf.ln(10)
-                pdf.cell(200, 30, txt=f"Nueva Partida", ln=True, align="C")
-                for i, col in enumerate(result2.columns):
-                    pdf.cell(col_widths[i], 10, str(col), border=1, align='C')
-                pdf.ln()
-
-                for _, row in result2.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths[i], 5, txt=value, border=1)
-                            pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
                 
-                pdf.add_page()
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 10, txt=f"Reforma metas - {fecha_hora}", ln=True, align="C")
-                pdf.cell(200, 15, txt=f"{direc}", ln=True, align="C")
-                pdf.ln(10)
-                # Anchos de columna para el DataFrame en el PDF
-                col_widths2 = [60, 60,60]  # Anchos de columna fijos
-                # Obtener anchos de columna dinámicos basados en el contenido
-                pdf.set_font("Arial", size=7)
-                for i, col in enumerate(ed_df.columns):
-                    pdf.cell(col_widths2[i], 14, str(col), border=1, align='C')
-                pdf.ln()
+                def export_to_pdf(dfp1, dfp2, dfp3):
+                        # Crear un objeto BytesIO para almacenar el PDF
+                    pdf_buffer = BytesIO()
+                            # Crear un objeto SimpleDocTemplate para el PDF
+                    #doc = SimpleDocTemplate("output.pdf", pagesize=custom_page_size, leftMargin=50, rightMargin=50, topMargin=50, bottomMargin=50)
 
-                for _, row in ed_df.iterrows():
-                    a=0
-                    b=0
-                    for i, value in enumerate(row):
-                        # Convertir el valor a string antes de la verificación
-                        value = str(value)
-                        if len(value) > 25:
-                            x = pdf.get_x()  # Guardar la posición X actual
-                            y = pdf.get_y()  # Guardar la posición Y actual
-                            pdf.multi_cell(col_widths2[i], 4, txt=value, border=1)
-                            pdf.set_xy(x + col_widths2[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        #   b = len(value)/4
-                        #elif a == 1:
-                        #    x = pdf.get_x()  # Guardar la posición X actual
-                        #    y = pdf.get_y()  # Guardar la posición Y actual
-                        #    pdf.multi_cell(col_widths[i], 5+b, txt=value, border=1,  align='C')
-                        #    pdf.set_xy(x + col_widths[i], y)  # Restablecer la posición XY
-                        #    a = 1
-                        else:
-                            pdf.cell(col_widths2[i], 10, txt=value, border=1, align='C')
-                    pdf.ln()
-                
+                    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                            # Obtener estilos de texto predefinidos
+                    styles = getSampleStyleSheet()
+                    # Agregar título a la página
+                  
+                    title = f"Reforma Solicitud-{fecha_hora}"
+                    title_style = styles['Title']
+                    title_style.spaceAfter = 12
+                    title_style.spaceBefore = 22
+                    title_paragraph = Paragraph(title, title_style)
+                    
+                    subtitle_text = f"{direc} - Presupuesto"
+                    subtitle_paragraph = Paragraph(subtitle_text, title_style)
 
+                    title2 = f"{direc} - Nueva Partida"
+                    title2_paragraph = Paragraph(title2, title_style)
 
-                # Guardar el PDF
-                #pdf_output = f"Reforma Presupuesto_{fecha_hora}.pdf"
+                    title3 = f"{direc} - Metas"
+                    title3_paragraph = Paragraph(title3, title_style) 
+
+                    
+                    # Agregar imagen a la página
+                    img_path = "logo GadPP.png"  # Reemplaza con la ruta de tu imagen
+                    image = Image(img_path, width=100, height=100) 
+
+                            # Convertir DataFrame a lista de listas para la tabla
+                    data1 = [dfp1.columns.tolist()] + [configure_cell(dfp1, row) for _, row in dfp1.iterrows()]  # Agregar una fila con los nombres de las variables
+        # Crear la tabla con los datos del DataFrame
+                    table1 = Table(data1, repeatRows=1, colWidths=[400] + [None] * (len(dfp1.columns) - 1))
+
+                            # Establecer estilos para la tabla
+                    table1.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinear el contenido al centro
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  # Fuente en negrita para la primera fila (encabezado)
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Agregar espacio inferior a la primera fila
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  # Agregar bordes a la tabla
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  # Espacio después de cada fila
+                    ]))
+
+                    data2 = [dfp2.columns.tolist()] + [configure_cell(dfp2, row) for _, row in dfp2.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table2 = Table(data2, repeatRows=1, colWidths=[400] + [None] * (len(dfp2.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table2.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+
+                    data3 = [dfp3.columns.tolist()] + [configure_cellmetas(dfp3, row) for _, row in dfp3.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table3 = Table(data3, repeatRows=1, colWidths=[200] + [None] * (len(dfp3.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table3.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+                # Construir el PDF con la tabla
+                    frames = [Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')]
+                    template = PageTemplate(id='encabezado_izquierdo', frames=frames, onPage=lambda canvas, doc, **kwargs: canvas.drawImage(img_path, doc.leftMargin-40, doc.height+55, width=120, height=90, preserveAspectRatio=True))
+                    doc.addPageTemplates([template])
+                    doc.build([title_paragraph, subtitle_paragraph, table1,title2_paragraph, table2,title3_paragraph, table3])
+                            # Obtener el contenido del BytesIO
+                    pdf_content = pdf_buffer.getvalue()
+                            # Cerrar el BytesIO
+                    pdf_buffer.close()
+
+                    return pdf_content
+
+                def configure_cell(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    first_col_text = str(row[df.columns[0]])
+                    first_col_text = '\n'.join([first_col_text[j:j+20] for j in range(0, len(first_col_text), 20)])
+                    return [Paragraph(first_col_text, styles['Normal'], encoding='utf-8')] + [str(row[col]) for col in df.columns[1:]]
+            
+                def configure_cellmetas(df, row):
+                    styles = getSampleStyleSheet()
+                    styles['Normal'].fontSize = 8
+                    # Aplicar el formato con '\n' a todas las columnas
+                    formatted_columns = [('\n'.join(str(row[col])[j:j+20] for j in range(0, len(str(row[col])), 20)), styles['Normal']) for col in df.columns]
+                    # Devolver una lista de objetos Paragraph para cada celda
+                    return [Paragraph(text, style, encoding='utf-8') for text, style in formatted_columns]
+
+        
+
+                if export_as_pdf:
+                            # Llamar a la función para exportar DataFrame a PDF
+                    pdf_content = export_to_pdf(dfp1, dfp2, dfp3)
+                                    # Descargar el PDF
+                    st.download_button('Descargar PDF', pdf_content, file_name='tabla_exportada.pdf', key='download_button')
+                                    # Mensaje de éxito
+                    st.success('Tabla exportada y PDF descargado exitosamente.') 
+
                 #pdf.output(pdf_output)
                 archivo_xlsx = descargar_xlsx(edited_rows, edit_rows, result)
                 st.download_button(
@@ -1836,13 +1777,12 @@ def Solicitud ():
                 )
 
                 
-                html = create_download_link(pdf.output(dest="S").encode("latin-1"), f"test{fecha_hora}")
-
-                st.markdown(html, unsafe_allow_html=True)
-#                st.success(f"Se ha generado el PDF: {pdf_output}")
+                
         else:
             #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
             st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
+  
+  
 
 
 
