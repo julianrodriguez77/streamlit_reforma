@@ -13,3 +13,4 @@ streamlit-state==0.1.0
 openpyxl==3.1.2
 pip
 xlsxwriter
+reportlab
