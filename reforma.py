@@ -48,11 +48,10 @@ st.markdown("<h4 style='text-align: center; background-color: #000045; color: #e
 #Pestañas
 menu_data = [
 {'id': 1, 'label': "Información", 'icon': "fa fa-home"},
-{'id': 2, 'label': "Documentación"},
-{'id': 3, 'label': "Interna"},
-{'id': 4, 'label': "Externa"},
-{'id': 5, 'label': "Liberación"},
-{'id': 6, 'label': "Solicitud"}
+{'id': 2, 'label': "Interna"},
+{'id': 3, 'label': "Externa"},
+{'id': 4, 'label': "Liberación"},
+{'id': 5, 'label': "Solicitud"}
 ]
 #Diseño de pestañas
 paginas=int(hc.nav_bar(
@@ -79,9 +78,9 @@ if paginas ==1:
                 Para cualquier inconveniente o duda adicional en la utilización de la plataforma, se invita a ponerse en contacto con Cecilia Sosa,
                 a la extensión institucional 12022.
             """)
-if paginas == 2:
-        st.markdown('A continuación, puede encontrar la normativa legal vigente y demás documentos de interés para el tema de reformas al presupuesto.')
-        st.markdown("""
+    
+    st.markdown('A continuación, puede encontrar la normativa legal vigente y demás documentos de interés para el tema de reformas al presupuesto.')
+    st.markdown("""
                 💡 **Enlaces**
                     
                 - [**RESOLUCIÓN ORDENANZA PROVINCIAL No. 06-CPP-2023-2027**](https://docs.snowflake.com/) 
@@ -90,26 +89,26 @@ if paginas == 2:
                 - [**MEMORANDO 55-DP-23**](https://docs.snowflake.com/) 
                 """)
 
-if paginas == 3:
+if paginas == 2:
     #Llamamos a la base
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
     #ENCABEZADO
-    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA INTERNA </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 Reforma al POA - Interna </h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>Dentro de la misma Dirección/Unidad</h4>", unsafe_allow_html=True)
-    st.markdown("")
+    #st.markdown("")
     with st.expander(f"Resumen", expanded=False):
          st.markdown("""
-                    
-                    Corresponde a la Reforma al POA donde una Unidad/Dirección ejecutora realiza cambios a su propia planificación presupuestaria o física.
+                    Esta reforma al POA es aquella donde una Unidad/Dirección ejecutora realiza cambios a su propia planificación presupuestaria o física.
                     """
                     )
-         st.info(""" **NOTA**: Las modificaciones se hacen sobre saldos disponibles y metas vigentes. """)
+         st.info(""" **NOTA**: Las modificaciones se hacen sobre saldos disponibles y metas vigentes.
+""")
      
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Escoga la unidad en la cual desea realizar la reforma </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea llevar a cabo la reforma.</h5>", unsafe_allow_html=True)
     #FILTRAMOS SOLO PAI
     df_odoo= df_odoo.loc[df_odoo['PAI/NO PAI'] == 'PAI']
     #AGRUPAMOS LAS UNIDADES
@@ -124,15 +123,29 @@ if paginas == 3:
     df = agregar_columnas(df)
     #SUBTITULOS
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Escoja el Proyecto y ajuste los valores en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Seleccione el Proyecto y despliegue las partidas a reformar. En la casilla de “Incremento / Disminución” ingrese los valores correspondientes. </h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
     #FORMATO DE COLUMNAS
+    js_sumFunction = JsCode("""
+
+        function sumFunction(params) {
+            let result = 0;
+            params.values.forEach((value) => {
+                if (typeof value === 'number') {
+                    result += value;
+                }
+            });
+        return Number(result).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+    """)
+
     gb = GridOptionsBuilder.from_dataframe(df) 
-    gb.configure_column('Unidad', hide=True)
-    gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True, cellRenderer= "agGroupCellRenderer")
+    gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
+    gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura', header_name="Actividad")
-    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc='sum', valueFormatter="data.Codificado.toLocaleString('en-US');")
-    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum' )
     cellsytle_jscode = JsCode("""
         function(params) {
             if (params.value > '0') {
@@ -156,11 +169,15 @@ if paginas == 3:
         };
     """)
 
-    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+    
     gb.configure_column('Nuevo Codificado',header_name='Nuevo Cod' , valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
-                        type=['numericColumn'],maxWidth=150, valueFormatter="data.Nuevo Codificado.toLocaleString('en-US');", aggFunc='sum', enableValue=True)
-    gb.configure_column('TOTAL', hide=True)
+                        type=['numericColumn'],maxWidth=150, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum', enableValue=True)
+    gb.configure_column('TOTAL', hide=True, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+
     go = gb.build()
+    go['alwaysShowHorizontalScroll'] = True
+    go['scrollbarWidth'] = 1
 
     edited_df = AgGrid(
         df,
@@ -178,15 +195,16 @@ if paginas == 3:
         edited_df['TOTAL'] = edited_df['Codificado'] + edited_df['Movimiento']
     #Barra despegable para crear una nueva partida
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Crear nuevas actividades presupuestarias: Seleccione el proyecto, coloque el nombre de la partida y el valor a incrementar.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
+   
     with st.expander(f"🆕  Crear una partida nueva para {direc} ", expanded=False): 
         st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
         dfnuevop = pd.DataFrame(columns=['Proyecto','Estructura','Incremento','Parroquia'])
         config = {
             'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='large', options=df_od['PROYECTO'].unique()),
-            'Estructura' : st.column_config.TextColumn('Estructura', width='large', required=True),
-            'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0,width='medium', required=True),
-            'Parroquia' : st.column_config.TextColumn('Parroquia', width='medium', required=True)
+            'Estructura' : st.column_config.TextColumn('Estructura', width='large'),
+            'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0,width='medium'),#format="%2f"),
+            'Parroquia' : st.column_config.TextColumn('Parroquia', width='medium')
         }
         result = st.data_editor(dfnuevop, column_config = config, num_rows='dynamic')
         
@@ -205,15 +223,15 @@ if paginas == 3:
         'Total_Nuev_Codif':  nuevo_p + edited_df['TOTAL'].sum() 
     }
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Verifica que los valores totales estén correctos. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Verifica que los valores totales sean correctos. </h5>", unsafe_allow_html=True)
     #Diseño de las tabla totales
     total_df = pd.DataFrame([total_row])
     gbt = GridOptionsBuilder.from_dataframe(total_df)
     gbt.configure_column('PROYECTO', minWidth =810 )
-    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
-    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
+    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
     #Tabla totales
     AgGrid(total_df,
             gridOptions=gbt.build(),
@@ -227,9 +245,9 @@ if paginas == 3:
         st.markdown('<div style="max-width: 900px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Correcto. El valor codificado es el mismo antes y después de la reforma</h3></div>', unsafe_allow_html=True)
     
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>5.- Escoja el proyecto, revise las metas y de ser necesario modifíquelas de ser necesario. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 5.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas. </h5>", unsafe_allow_html=True)
     #TABLA DE METAS
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
     #Diseño de tablas
     gbmt = GridOptionsBuilder.from_dataframe(df_mt)
     gbmt.configure_column('Proyecto', minWidth =408, editable=False )
@@ -251,13 +269,9 @@ if paginas == 3:
         st.write('No se realizaron cambios en de la información')
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
-
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 6.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.</h5>", unsafe_allow_html=True)
     st.info("""
-            Descargue adjunto:
-                
-            En el caso de que no haya anteriores revisiones, guarde la información y descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.
-            * Recuerde que el memorando de solicitud debe contener las justificaciones técnicas y demás documentación de respaldo.
-
+            **Nota**: Recuerde que el memorando de solicitud de reforma debe además contener las justificaciones técnicas y documentación de respaldo.
             """)
     #función para descargar el excel
     def descargar_xlsx(edited_rows, edit_rows, result):
@@ -418,20 +432,15 @@ if paginas == 3:
         #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
 
-if paginas == 4:
+if paginas == 3:
 
-    st.markdown("<h1 style='text-align:center;background-color: #028d96; color: #ffffff'>🌀 REFORMA AL POA EXTERNA </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;background-color: #028d96; color: #ffffff'>🌀 Reforma al POA - Externa </h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'>Entre diferentes Dirección/Unidad </h4>", unsafe_allow_html=True)
-    st.markdown("")
+    #st.markdown("")
     with st.expander("💱  Resumen", expanded=False):
         st.markdown("""
                     
-                    Corresponde a la Reforma al POA en que se modifican los valores codificados de las Unidades (disminución/ incremento), por transferencia de valores de una unidad a otra unidad del GADPP,  y afecta:
-
-                    - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos de las unidades involucradas, y/o
-                    - A la **programación física**, por modificación o no de las metas de los proyectos de las unidades involucradas.
-
-                    Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado, con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
+                    Esta reforma al POA es aquella donde dos Unidades o Direcciones ejecutoras realizan cambios a su planificación presupuestaria (a través del traspaso de recursos entre áreas) o física.
 
                     """
                     )
@@ -440,7 +449,7 @@ if paginas == 4:
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Escoga la unidad donde se realiza la disminución </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #3A67FF'>1.- Seleccione la Unidad/Dirección en la cual desea `disminuir` el presupuesto.</h5>", unsafe_allow_html=True)
 
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
@@ -463,16 +472,16 @@ if paginas == 4:
     #Espacio
     st.title('')
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Escoja el Proyecto y ajuste los valores en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuestos de {direc} </h3>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>2.- Seleccione el Proyecto, despliegue las partidas y reduzca los saldos en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuestos de {direc} </h3>", unsafe_allow_html=True)
     
         
     gb = GridOptionsBuilder.from_dataframe(df) 
     gb.configure_column('Unidad', hide=True)
     gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura')
-    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
-    gb.configure_column('Saldo_Disponible',header_name='Saldo', maxWidth=130, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+    gb.configure_column('Saldo_Disponible',header_name='Saldo', maxWidth=130,valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" , aggFunc='sum' )
     cellsytle_jscode = JsCode("""
         function(params) {
             if (params.value > '0') {
@@ -496,10 +505,10 @@ if paginas == 4:
         };
     """)
         
-    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=150, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=150, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
     gb.configure_column('TOTAL2',header_name='Nuev cod', valueGetter='Number(data.Codificado) + Number(data.Movimiento)',maxWidth=150, cellRenderer='agAnimateShowChangeCellRenderer',
-                         editable=True, type=['numericColumn'], aggFunc='sum')
-    gb.configure_column('TOTAL', hide=True)
+                         editable=True, type=['numericColumn'], aggFunc='sum',valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+    gb.configure_column('TOTAL', hide=True,valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
     go = gb.build()
         
     edited_df = AgGrid(
@@ -521,60 +530,73 @@ if paginas == 4:
         edited_df = pd.DataFrame(edited_df['data'])
         edited_df['TOTAL'] = edited_df['Codificado'] + edited_df['Movimiento']
         
-
+    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
+   
+    with st.expander(f"🆕  Crear una partida nueva para {direc} ", expanded=False): 
+        st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
+        dfnuevop2 = pd.DataFrame(columns=['Proyecto','Estructura','Incremento','Parroquia'])
+        config2 = {
+            'Proyecto' : st.column_config.SelectboxColumn('Proyecto',width='large', options=df_od['PROYECTO'].unique()),
+            'Estructura' : st.column_config.TextColumn('Estructura', width='large'),
+            'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0,width='medium'),#format="%2f"),
+            'Parroquia' : st.column_config.TextColumn('Parroquia', width='medium')
+        }
+        result2 = st.data_editor(dfnuevop2, column_config = config2, num_rows='dynamic')
+        
+        if st.button('Crear partida:'):
+            st.write(result2)
+    #TOTALES
     total_cod = int(edited_df['Codificado'].sum())
     total_mov = int(edited_df['Movimiento'].sum())
     total_tot = int(edited_df['TOTAL'].sum())
+    nuevo_p2 = int(result2['Incremento'].sum())
 
     total_row = {
             'PROYECTO': 'Total', 
             'Total_Codificado': df['Codificado'].sum(),
             'Total_Saldo': df['Saldo_Disponible'].sum(),
-            'Tot_Increm/Dismi': edited_df['Movimiento'].sum(),
-            'Total_Nuev_Codif':  edited_df['TOTAL'].sum() 
+            'Tot_Increm/Dismi': edited_df['Movimiento'].sum() + nuevo_p2,
+            'Total_Nuev_Codif':  nuevo_p2 + edited_df['TOTAL'].sum() 
         }
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Verifica que los valores totales estén correctos. </h5>", unsafe_allow_html=True)
     
     total_df = pd.DataFrame([total_row])
     gbt = GridOptionsBuilder.from_dataframe(total_df) 
     gbt.configure_column('PROYECTO', minWidth =810 )
-    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
-    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
-    AgGrid(total_df,
-           gridOptions=gbt.build(),
-           theme='alpine',
-           height=120)
+    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    #AgGrid(total_df,
+    #       gridOptions=gbt.build(),
+    #       theme='alpine',
+    #       height=120)
 
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Escoja el proyecto, revise las metas y de ser necesario modifíquelas de ser necesario. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {direc}</h3>", unsafe_allow_html=True)
-    # Mostrar la tabla con la extensión st_aggrid
-    with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
-        gbmt = GridOptionsBuilder.from_dataframe(df_mt)
-        gbmt.configure_column('Proyecto', minWidth =408, editable=False )
-        gbmt.configure_column('Metas', minWidth =350, editable=False )
-        gbmt.configure_column('Nueva Meta', minWidth =300, editable=True )
-        gbmt.configure_column('Observación', minWidth =300, editable=True )
-
-        edit_df = AgGrid(df_mt,
-                         gridOptions=gbmt.build(),
-                         height=350)
-                            #reload_data=reload_data,)
-        edit_df = pd.DataFrame(edit_df['data'])
-
-    #CERRAMOS LA SECCIÓN
-    st.markdown("---")
-
-
-    if total_mov < 0:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a disminuido el valor de:  ${total_mov:} en {direc}</h3></div>', unsafe_allow_html=True)
+    if total_mov + nuevo_p2 < 0:
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se ha disminuido el valor de:  ${total_mov+nuevo_p2:} en {direc}</h3></div>', unsafe_allow_html=True)
     elif total_mov == 0:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado ninguna disminución del codificado en {direc}</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se ha realizado ninguna disminución del codificado en {direc}</h3></div>', unsafe_allow_html=True)
     else:
         st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se puede incrementar un valor solo disminuir  </h3></div>', unsafe_allow_html=True)
+
+    
+    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>4.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas. </h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {direc}</h3>", unsafe_allow_html=True)
+    # Mostrar la tabla con la extensión st_aggrid
+    #with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
+    gbmt = GridOptionsBuilder.from_dataframe(df_mt)
+    gbmt.configure_column('Proyecto', minWidth =408, editable=False )
+    gbmt.configure_column('Metas', minWidth =350, editable=False )
+    gbmt.configure_column('Nueva Meta', minWidth =300, editable=True )
+    gbmt.configure_column('Observación', minWidth =300, editable=True )
+
+    edit_df = AgGrid(df_mt,
+                        gridOptions=gbmt.build(),
+                        height=250)
+                        #reload_data=reload_data,)
+    edit_df = pd.DataFrame(edit_df['data'])
+
         
     ##################################################
     #################     TABLA 2  ###################
@@ -582,8 +604,8 @@ if paginas == 4:
     #st.markdown("---")
     #st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Paso 2: Unidad a que se le asigna el incremento  </h2>", unsafe_allow_html=True)
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>5.- Escoja la Unidad donde se agregara el incremento </h5>", unsafe_allow_html=True)
+    st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea **incrementar** el presupuesto. </h5>", unsafe_allow_html=True)
     
     # Obtener las opciones para el segundo selectbox excluyendo la opción seleccionada en el primero    
     opci = odf['Unidad'][odf['Unidad'] != direc]
@@ -600,10 +622,10 @@ if paginas == 4:
     dfd2 = agregar_column(dfd2)
     
     st.title('')
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>6.- Escoja el Proyecto y ajuste los valores en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
+    st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Seleccione el Proyecto, despliegue las partidas y reduzca los saldos en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
 
-    st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuesto de {selec} </h3>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuesto de {selec} </h3>", unsafe_allow_html=True)
    
     edi = AgGrid(
         dfd2,
@@ -617,8 +639,14 @@ if paginas == 4:
         
     )
 
+    # Si se detectan cambios, actualiza el DataFrame
+    if edi is not None:
+        # Convierte el objeto AgGridReturn a DataFrame
+        edi = pd.DataFrame(edi['data'])
+        edi['TOTAL'] = edi['Codificado'] + edi['Movimiento']
+
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>7.- Crear nuevas actividades presupuestarias: Seleccione el proyecto, coloque el nombre de la partida y el valor a incrementar.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>8.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
     
     with st.expander("🆕  Crear una partida nueva", expanded=False): 
             st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
@@ -629,17 +657,12 @@ if paginas == 4:
                 'Incremento' : st.column_config.NumberColumn('Incremento', min_value=0,width='medium', required=True),
                 'Parroquia' : st.column_config.TextColumn('Parroquia', width='medium', required=True)
             }
-
             result = st.data_editor(dfnuevop, column_config = config, num_rows='dynamic')
 
-            if st.button('Crear partida:'):
+            if st.button('Crear partida 2:'):
                 st.write(result)
         
-    # Si se detectan cambios, actualiza el DataFrame
-    if edi is not None:
-        # Convierte el objeto AgGridReturn a DataFrame
-        edi = pd.DataFrame(edi['data'])
-        edi['TOTAL'] = edi['Codificado'] + edi['Movimiento']
+
        
     total_cod2 = int(edi['Codificado'].sum())
     total_mov2 = int(edi['Movimiento'].sum())
@@ -654,21 +677,21 @@ if paginas == 4:
             'Total_Nuev_Codif':  edi['TOTAL'].sum() + nuevo_p  
         }
     
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>8.- Verifica que los valores totales estén correctos. </h5>", unsafe_allow_html=True)
+    #st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
+    #st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>8.- Verifica que los valores totales estén correctos.(no va) </h5>", unsafe_allow_html=True)
     
     total_df = pd.DataFrame([total_row])
     gbt = GridOptionsBuilder.from_dataframe(total_df) 
     gbt.configure_column('PROYECTO', minWidth =810 )
-    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
-    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
+    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString(''es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }');" )
+    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString(''es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }');" )
+    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString(''es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }');" )
+    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString(''es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }');" )
    
-    AgGrid(total_df,
-           gridOptions=gbt.build(),
-           theme='alpine',
-           height=120)
+    #AgGrid(total_df,
+    #       gridOptions=gbt.build(),
+    #       theme='alpine',
+    #       height=120)
     
 
     if total_mov2+nuevo_p < 0:
@@ -679,41 +702,42 @@ if paginas == 4:
         st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a incrementado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
 
     #st.markdown("---")
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>9.- Escoja el proyecto, revise las metas y de ser necesario modifíquelas de ser necesario. </h5>", unsafe_allow_html=True)
+    st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas.</h5>", unsafe_allow_html=True)
 
-    st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {selec} </h3>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {selec} </h3>", unsafe_allow_html=True)
     # Mostrar la tabla con la extensión st_aggrid
-    with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
-        gbmtd = GridOptionsBuilder.from_dataframe(df_mtt)
-        gbmtd.configure_column('Proyecto', minWidth =408, editable=False )
-        gbmtd.configure_column('Metas', minWidth =350, editable=False )
-        gbmtd.configure_column('Nueva Meta', minWidth =300, editable=True )
-        gbmtd.configure_column('Observación', minWidth =300, editable=True )
-        
+    #with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
+    gbmtd = GridOptionsBuilder.from_dataframe(df_mtt)
+    gbmtd.configure_column('Proyecto', minWidth =408, editable=False )
+    gbmtd.configure_column('Metas', minWidth =350, editable=False )
+    gbmtd.configure_column('Nueva Meta', minWidth =300, editable=True )
+    gbmtd.configure_column('Observación', minWidth =300, editable=True )
+    
 
-        edit_dfd = AgGrid(df_mtt,
-                         gridOptions=gbmtd.build(),
-                         height=350)
-                            #reload_data=reload_data,)
-        edit_dfd = pd.DataFrame(edit_dfd['data'])
+    edit_dfd = AgGrid(df_mtt,
+                        gridOptions=gbmtd.build(),
+                        height=350)
+                        #reload_data=reload_data,)
+    edit_dfd = pd.DataFrame(edit_dfd['data'])
         
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #C82905; background-color: #FfFFFF;'>1.- Verifique que los valores totales sean correctos.</h5>", unsafe_allow_html=True)
 
-    if total_mov2+nuevo_p != -total_mov:
+    
+
+
+    if total_mov2+nuevo_p != -(total_mov+nuevo_p2):
         st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">El valor que se disminuyo en {direc} e incremento en {selec} es diferente, revizar información. </h3></div>', unsafe_allow_html=True)
     else:
         st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor que se disminuyo en {direc} e incremento en {selec} es el mismo.</h3></div>', unsafe_allow_html=True)
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #C82905; background-color: #FfFFFF;'>2.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.</h5>", unsafe_allow_html=True)
 
     st.info("""
-            Descargue adjunto:
-                
-            En el caso de que no haya anteriores revisiones, guarde la información y descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.
-            * Recuerde que el memorando de solicitud debe contener las justificaciones técnicas y demás documentación de respaldo.
-
+            **Nota:** Recuerde que el memorando de solicitud de reforma debe además contener las justificaciones técnicas y documentación de respaldo.
             """)
     
    
@@ -726,7 +750,7 @@ if paginas == 4:
     except:
         st.write('No se realizaron cambios en la información')
 
-    def descargar_xlsx(edited_rows,edited_rows2, edit_rows, edit_rows2, result):
+    def descargar_xlsx(edited_rows,edited_rows2, edit_rows, edit_rows2, result2, result):
               # Guardar los DataFrames en dos hojas de un archivo XLSX en memoria
                     output = BytesIO()
                     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -734,7 +758,8 @@ if paginas == 4:
                         edited_rows2.to_excel(writer, sheet_name='Presupuesto(PARA)', index=False)
                         edit_rows.to_excel(writer, sheet_name='Metas (DE)', index=False)
                         edit_rows2.to_excel(writer, sheet_name='Metas (PARA)' , index=False)
-                        result.to_excel(writer, sheet_name='Nueva_partida', index=False)
+                        result2.to_excel(writer, sheet_name='Nueva_partida(DE)', index=False)
+                        result.to_excel(writer, sheet_name='Nueva_partida(PARA)', index=False)
                     output.seek(0)
                     return output
 
@@ -759,31 +784,42 @@ if paginas == 4:
     dfp1 = pd.concat([nuevo_df, total_row])
     dfp4 = pd.concat([nuevo_df2, total_row2])
     
-    # NUEVA PARTIDA
+    # NUEVA PARTIDA (DE)
+    result_filtro2 = ['Proyecto','Estructura','Incremento']
+    result22 = result2[result_filtro2]
+    result22['Proyecto, Estructura']=result22['Proyecto']+ ' | ' + result22['Estructura']
+    resul_filtro2=['Proyecto, Estructura','Incremento']
+    result22=result22[resul_filtro2]
+    sum_res2=result22[['Incremento']].sum()
+    total_res2 = pd.DataFrame([['Total', sum_res2['Incremento']]], 
+                            columns=['Proyecto, Estructura','Incremento'], index=['Total'])
+    result22 = pd.concat([result22, total_res2])
+    dfp22=result22
+    # NUEVA PARTIDA (PARA)
     result_filtro1 = ['Proyecto','Estructura','Incremento']
-    result2 = result[result_filtro1]
-    result2['Proyecto, Estructura']=result2['Proyecto']+ ' | ' + result2['Estructura']
+    result21 = result[result_filtro1]
+    result21['Proyecto, Estructura']=result21['Proyecto']+ ' | ' + result21['Estructura']
     resul_filtro=['Proyecto, Estructura','Incremento']
-    result2=result2[resul_filtro]
-    sum_res=result2[['Incremento']].sum()
+    result21=result21[resul_filtro]
+    sum_res=result21[['Incremento']].sum()
     total_res = pd.DataFrame([['Total', sum_res['Incremento']]], 
                             columns=['Proyecto, Estructura','Incremento'], index=['Total'])
-    result2 = pd.concat([result2, total_res])
-    dfp2=result2
+    result21 = pd.concat([result21, total_res])
+    dfp2=result21
 
     #Creamos una nueva tabla para las metas
     meta_filtro = ['Proyecto','Metas','Nueva Meta','Observación']
     dfp3 = edit_rows[meta_filtro]
     dfp5 = edit_rows2[meta_filtro]
 
-    if total_mov2+nuevo_p == -(total_mov):
+    if total_mov2+nuevo_p == -(total_mov+nuevo_p2):
             if export_as_pdf:
                 now = datetime.now()
                 fecha_hora = now.strftime("%Y%m%d%H%M")    
                 st.write('Descargando... ¡Espere un momento!')
                 
                 
-                def export_to_pdf(dfp1, dfp2, dfp3,dfp4,dfp5):
+                def export_to_pdf(dfp1,dfp22, dfp2, dfp3,dfp4,dfp5):
                         # Crear un objeto BytesIO para almacenar el PDF
                     pdf_buffer = BytesIO()
     
@@ -803,7 +839,10 @@ if paginas == 4:
                     subtitle_text2 = f"Para: {selec}-Presupuesto"
                     subtitle2_paragraph = Paragraph(subtitle_text2, title_style)
 
-                    title2 = f"Nueva Partida - {selec}"
+                    title5 = f"{direc} - Nueva Partida "
+                    title5_paragraph = Paragraph(title5, title_style)
+
+                    title2 = f"{selec} - Nueva Partida "
                     title2_paragraph = Paragraph(title2, title_style)
 
                     title3 = f"{direc} - Reforma metas"
@@ -856,6 +895,19 @@ if paginas == 4:
                         ('SPACEAFTER', (0, 0), (-1, -1), 6)  
                     ]))
 
+                    data22 = [dfp22.columns.tolist()] + [configure_cell(dfp22, row) for _, row in dfp22.iterrows()]
+                    # Crear la segunda tabla con los datos del DataFrame 2
+                    table22 = Table(data22, repeatRows=1, colWidths=[400] + [None] * (len(dfp22.columns) - 1))
+
+                    # Establecer estilos para la segunda tabla
+                    table22.setStyle(TableStyle([
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica'),  
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+                        ('GRID', (0, 0), (-1, -1), 0.7, 'black'),  
+                        ('SPACEAFTER', (0, 0), (-1, -1), 6)  
+                    ]))
+
                     data3 = [dfp3.columns.tolist()] + [configure_cellmetas(dfp3, row) for _, row in dfp3.iterrows()]
                     # Crear la segunda tabla con los datos del DataFrame 2
                     table3 = Table(data3, repeatRows=1, colWidths=[200] + [None] * (len(dfp3.columns) - 1))
@@ -885,7 +937,7 @@ if paginas == 4:
                     frames = [Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')]
                     template = PageTemplate(id='encabezado_izquierdo', frames=frames, onPage=lambda canvas, doc, **kwargs: canvas.drawImage(img_path, doc.leftMargin-40, doc.height+55, width=120, height=90, preserveAspectRatio=True))
                     doc.addPageTemplates([template])
-                    doc.build([title_paragraph, subtitle_paragraph, table1,title3_paragraph, table3, subtitle2_paragraph, table4,title2_paragraph, table2,title4_paragraph,table5])
+                    doc.build([title_paragraph, subtitle_paragraph, table1, title5_paragraph, table22, title3_paragraph, table3, subtitle2_paragraph, table4,title2_paragraph, table2,title4_paragraph,table5])
                     # Obtener el contenido del BytesIO
                     pdf_content = pdf_buffer.getvalue()
                             # Cerrar el BytesIO
@@ -912,13 +964,13 @@ if paginas == 4:
 
                 if export_as_pdf:
                             # Llamar a la función para exportar DataFrame a PDF
-                    pdf_content = export_to_pdf(dfp1, dfp2, dfp3,dfp4,dfp5)
+                    pdf_content = export_to_pdf(dfp1, dfp22, dfp2, dfp3,dfp4,dfp5)
                                     # Descargar el PDF
                     st.download_button('Descargar PDF', pdf_content, file_name='tabla_exportada.pdf', key='download_button')
                                     # Mensaje de éxito
                     st.success('Tabla exportada y PDF descargado exitosamente.') 
                 
-                archivo_xlsx = descargar_xlsx(edited_rows,edited_rows2, edit_rows,edit_rows2, result)
+                archivo_xlsx = descargar_xlsx(edited_rows,edited_rows2, edit_rows,edit_rows2,result2, result)
                 st.download_button(
                         label="Haz clic para descargar",
                         data=archivo_xlsx.read(),
@@ -932,32 +984,25 @@ if paginas == 4:
             st.warning('La disminución e incremento realizadas tienen incosistencias revisar para descargar.')
             #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
 
-if paginas == 5:
+if paginas == 4:
      
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
     #ENCABEZADO
-    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 REFORMA LIBERACIÓN </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>🔄 Reforma al POA - de liberación </h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'> Se libera el presupuesto de la Dirección/Unidad </h4>", unsafe_allow_html=True)
-    st.markdown("")        
+    #st.markdown("")        
     with st.expander("💱  Resumen", expanded=False):
         st.markdown("""
-
-                    Corresponde a la Reforma al POA en que el valor codificado de la Unidad no se modifica, las reformas/modificaciones, se realizan únicamente entre actividades de proyectos de la misma Unidad, y afecta:
-                    
-                    - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos; y/o
-                    - A la **programación física**, por modificación o no de las metas de los proyectos.
-
-                    Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
-                    
+                        Esta reforma al POA es aquella donde una Unidad/Dirección ejecutora realiza una solicitud de liberación de presupuesto y esto afecta a su planificación presupuestaria o física.
                     """
                 )
-        st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)
+        st.info(""" **NOTA**: Las liberaciones se hacen sobre saldos disponibles. """)
     
     st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Pasos para la reforma </h2>", unsafe_allow_html=True)
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Escoga la unidad en la cual desea realizar la reforma </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea llevar a cabo la reforma. </h5>", unsafe_allow_html=True)
     
     #FILTRAMOS SOLO PAI
     df_odoo= df_odoo.loc[df_odoo['PAI/NO PAI'] == 'PAI']
@@ -974,15 +1019,15 @@ if paginas == 5:
     df = agregar_columnas(df)
     #SUBTITULOS
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Escoja el Proyecto y ajuste los valores en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Seleccione el Proyecto y despliegue las partidas a reformar. En la casilla de “Incremento / Disminución” ingrese los valores correspondientes.</h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
     #FORMATO DE COLUMNAS
     gb = GridOptionsBuilder.from_dataframe(df) 
     gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
     gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura', header_name="Actividad")
-    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
-    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum' )
     cellsytle_jscode = JsCode("""
         function(params) {
             if (params.value > '0') {
@@ -1006,10 +1051,10 @@ if paginas == 5:
         };
     """)
       
-    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
     
     gb.configure_column('Nuevo Codificado',header_name='Nuevo Cod' , valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
-                        type=['numericColumn'],maxWidth=150, valueFormatter="data.Nuevo Codificado.toLocaleString('en-US');", aggFunc='sum', enableValue=True)
+                        type=['numericColumn'],maxWidth=150, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum', enableValue=True)
     gb.configure_column('TOTAL', hide=True)
 
     go = gb.build()
@@ -1066,15 +1111,15 @@ if paginas == 5:
         'Total_Nuev_Codif': edited_df['TOTAL'].sum() 
     }
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Verifica que los valores totales estén correctos. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Verifique que los valores totales sean correctos. </h5>", unsafe_allow_html=True)
     
     total_df = pd.DataFrame([total_row])
     gbt = GridOptionsBuilder.from_dataframe(total_df)
     gbt.configure_column('PROYECTO', minWidth =810 )
-    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
-    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
+    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
    
     
     
@@ -1090,9 +1135,9 @@ if paginas == 5:
 
 
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Escoja el proyecto, revise las metas y de ser necesario modifíquelas de ser necesario. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 4.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas.</h5>", unsafe_allow_html=True)
 
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
     # Mostrar la tabla con la extensión st_aggrid
     #with st.expander(f"🆕  Modificar metas de los proyectos de {direc}", expanded=False): 
     gbmt = GridOptionsBuilder.from_dataframe(df_mt)
@@ -1115,17 +1160,14 @@ if paginas == 5:
         st.write('No se realizaron cambios en de la información')
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 5.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma. </h5>", unsafe_allow_html=True)
 
     st.info("""
-            Descargue adjunto:
-                
-            En el caso de que no haya anteriores revisiones, guarde la información y descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.
-            * Recuerde que el memorando de solicitud debe contener las justificaciones técnicas y demás documentación de respaldo.
-
+            **Nota**: Recuerde que el memorando de solicitud de reforma debe además contener las justificaciones técnicas y documentación de respaldo.
             """)
     
 
-    st.markdown("---")
+    #st.markdown("---")
     def descargar_xlsx(edited_rows, edit_rows):
             # Guardar los DataFrames en dos hojas de un archivo XLSX en memoria
                 output = BytesIO()
@@ -1258,32 +1300,25 @@ if paginas == 5:
     else:
         st.warning('No se puede descargar, porque no se esta liberando el presupuesto')    
 
-if paginas == 6:
+if paginas == 5:
     #CARGAMOS LAS BASES
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
     #ENCABEZADO
-    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>➕ REFORMA AL POA POR INCREMENTO DE PRESUPUESTO</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;background-color: #000045; color: #ffffff'>➕ Reforma al POA - de solicitud</h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #f0efeb; color: #080200'> Se solicita presupuesto a la Institución</h4>", unsafe_allow_html=True)
-    st.markdown("")
+    #st.markdown("")
     with st.expander("💱  Resumen", expanded=False):
         st.markdown("""
-
-                    Corresponde a la Reforma al POA en que el valor codificado de la Unidad no se modifica, las reformas/modificaciones, se realizan únicamente entre actividades de proyectos de la misma Unidad, y afecta:
-                    
-                    - A la **programación presupuestaria**, por incremento o disminución de los valores codificados de las actividades de los proyectos; y/o
-                    - A la **programación física**, por modificación o no de las metas de los proyectos.
-
-                    Una vez realizada la reforma al POA, presupuestaria y/o de metas, se procede a guardar la información; automáticamente se generará un archivo pdf codificado con la información de las modificaciones realizadas ya sea solo presupuestaria y/o de metas.
-                    
+                        Esta reforma al POA es aquella donde una Unidad/Dirección ejecutora realiza una solicitud de incremento a su presupuesto y esto afecta a su planificación presupuestaria o física.
                     """
                 )
-        st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)
+       # st.info(""" **NOTA**: Las modificaciones se harán sobre los saldos disponibles no comprometidos de las asignaciones. """)
     
     st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Pasos para la reforma </h2>", unsafe_allow_html=True)
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Escoga la unidad en la cual desea realizar la reforma </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea llevar a cabo la reforma. </h5>", unsafe_allow_html=True)
     
         #reload---
     reload_data = False
@@ -1305,15 +1340,15 @@ if paginas == 6:
     #SUBTITULOS
     #st.markdown(f"<h2 style='text-align:center;'> {direc} </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Escoja el Proyecto y ajuste los valores en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>2.- Seleccione el Proyecto y despliegue las partidas a reformar. En la casilla de “Incremento / Disminución” ingrese los valores correspondientes. </h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Presupuesto de {direc} </h3>", unsafe_allow_html=True, help="Se realiza cambios en la columna Movimientos, tomar encuenta el saldo disponible para restar un valor caso contrario no se tomara encuenta la reforma.")
     #FORMATO DE COLUMNAS
     gb = GridOptionsBuilder.from_dataframe(df) 
     gb.configure_column('Unidad', hide=True)#, rowGroup=True, cellRenderer= "agGroupCellRenderer", )
     gb.configure_column('PROYECTO',header_name="PROYECTO", hide=True, rowGroup=True)
     gb.configure_column('Estructura', header_name="Actividad")
-    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="data.Codificado.toLocaleString('en-US');")
-    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="data.Saldo_Disponible.toLocaleString('en-US');", aggFunc='sum' )
+    gb.configure_column(field ='Codificado', maxWidth=150, aggFunc="sum", valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
+    gb.configure_column('Saldo_Disponible', header_name="Saldo", maxWidth=120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum' )
     cellsytle_jscode = JsCode("""
         function(params) {
             if (params.value > '0') {
@@ -1349,10 +1384,10 @@ if paginas == 6:
             
         }
     """)    
-    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120, valueFormatter="data.Movimiento.toLocaleString('en-US');")
+    gb.configure_column('Movimiento', header_name='Increm/Dismi' , editable= True ,type=['numericColumn'], cellStyle=cellsytle_jscode, maxWidth=120,valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})")
     
     gb.configure_column('Nuevo Codificado',header_name='Nuevo Cod' , valueGetter='Number(data.Codificado) + Number(data.Movimiento)', cellRenderer='agAnimateShowChangeCellRenderer',
-                        type=['numericColumn'],maxWidth=150, valueFormatter="data.Nuevo Codificado.toLocaleString('en-US');", aggFunc='sum', enableValue=True)
+                        type=['numericColumn'],maxWidth=150, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})", aggFunc='sum', enableValue=True)
     gb.configure_column('TOTAL', hide=True)
 
     go = gb.build()
@@ -1399,7 +1434,7 @@ if paginas == 6:
                         #reload_data=reload_data,)
     #edit_df = pd.DataFrame(edit_df['data'])
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Crear nuevas actividades presupuestarias: Seleccione el proyecto, coloque el nombre de la partida y el valor a incrementar.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar. </h5>", unsafe_allow_html=True)
     with st.expander(f"🆕  Crear una partida nueva para {direc} ", expanded=False): 
         st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
         dfnuevop = pd.DataFrame(columns=['Proyecto','Estructura','Incremento','Parroquia'])
@@ -1431,12 +1466,12 @@ if paginas == 6:
     total_df = pd.DataFrame([total_row])
     gbt = GridOptionsBuilder.from_dataframe(total_df)
     gbt.configure_column('PROYECTO', minWidth =810 )
-    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="data.Total_Saldo.toLocaleString('en-US');" )
-    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="data.Tot_Increm/Dismi.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="data.Total_Nuev_Codif.toLocaleString('en-US');" )
-    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="data.Total_Codificado.toLocaleString('en-US');" )
+    gbt.configure_column('Total_Saldo', header_name='Total Saldo', maxWidth =120, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Tot_Increm/Dismi', header_name='Tot Incr/Dismi', maxWidth =140, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Nuev_Codif', header_name='Tot Nuev Cod', maxWidth =135, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
+    gbt.configure_column('Total_Codificado', header_name='Tot Codificado',  maxWidth =145, valueFormatter="value.toLocaleString('es',{minimumFractionDigits: 2,  maximumFractionDigits: 2})" )
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>4.- Verifica que los valores totales estén correctos. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'> 4.- Verifique que los valores totales sean correctos. </h5>", unsafe_allow_html=True)
     
     AgGrid(total_df,
             gridOptions=gbt.build(),
@@ -1451,8 +1486,8 @@ if paginas == 6:
     #st.markdown("---")
 
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>5.- Escoja el proyecto, revise las metas y de ser necesario modifíquelas de ser necesario. </h5>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>5.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas. </h5>", unsafe_allow_html=True)
+    #st.markdown(f"<h3 style='text-align: center; background-color: #DDDDDD;'> 🗄 Tabla de Metas de {direc} </h3>", unsafe_allow_html=True, help="En la columna Nueva Meta se puede agregar la modificación a la meta actual")
     
     gbmt = GridOptionsBuilder.from_dataframe(df_mt)
     gbmt.configure_column('Proyecto', minWidth =408, editable=False )
@@ -1474,16 +1509,14 @@ if paginas == 6:
         st.write('No se realizaron cambios en de la información')
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>6.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma. </h5>", unsafe_allow_html=True)
 
     st.info("""
-            Descargue adjunto:
-                
-            En el caso de que no haya ulteriores revisiones, guarde la información y descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.
-            * Recuerde que el memorando de solicitud debe contener las justificaciones técnicas y demás documentación de respaldo.
+            **Nota:** Recuerde que el memorando de solicitud de reforma debe además contener las justificaciones técnicas y documentación de respaldo.
 
             """)
 
-    st.markdown("---")
+    #st.markdown("---")
     #st.markdown(type(Codificado))
     def descargar_xlsx(edited_rows, edit_rows, result):
             # Guardar los DataFrames en dos hojas de un archivo XLSX en memoria
@@ -1651,5 +1684,3 @@ if paginas == 6:
     else:
         #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
-
-
