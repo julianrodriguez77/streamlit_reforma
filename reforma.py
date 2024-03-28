@@ -449,7 +449,7 @@ if paginas == 3:
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #3A67FF'>1.- Seleccione la Unidad/Dirección en la cual desea `disminuir` el presupuesto.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: blue'>1.- Seleccione la Unidad/Dirección en la cual desea <span style='color:#00CBC2'>disminuir </span> el presupuesto.</h5>", unsafe_allow_html=True)
 
     df_odoo = pd.DataFrame(odoo)
     df_mt = pd.DataFrame(metas)
@@ -472,7 +472,7 @@ if paginas == 3:
     #Espacio
     st.title('')
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>2.- Seleccione el Proyecto, despliegue las partidas y reduzca los saldos en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: blue; background-color: #FfFFFF;'>2.- Seleccione el Proyecto, despliegue las partidas y reduzca los saldos en la casilla de “Incremento / Disminución”. </h5>", unsafe_allow_html=True)
     #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Presupuestos de {direc} </h3>", unsafe_allow_html=True)
     
         
@@ -531,7 +531,7 @@ if paginas == 3:
         edited_df['TOTAL'] = edited_df['Codificado'] + edited_df['Movimiento']
         
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: blue; background-color: #FfFFFF;'>3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
    
     with st.expander(f"🆕  Crear una partida nueva para {direc} ", expanded=False): 
         st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
@@ -581,7 +581,7 @@ if paginas == 3:
 
     
     st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #3A67FF; background-color: #FfFFFF;'>4.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: blue; background-color: #FfFFFF;'>4.- Ajuste de metas: Seleccione el proyecto, revise las metas y, si es necesario, modifíquelas. </h5>", unsafe_allow_html=True)
     #st.markdown(f"<h3 style='text-align: center; background-color: #f1f6f7; color: #080200'> Tabla de Metas de {direc}</h3>", unsafe_allow_html=True)
     # Mostrar la tabla con la extensión st_aggrid
     #with st.expander("💱  Realizar modificaciones a las metas", expanded=False):
@@ -605,7 +605,7 @@ if paginas == 3:
     #st.markdown("<h2 style='text-align: center; background-color: #26469C; color: #ffffff'> Paso 2: Unidad a que se le asigna el incremento  </h2>", unsafe_allow_html=True)
     #st.markdown("<h2 style='text-align: left;  color: #ccccc'>Pasos para la reforma </h2>", unsafe_allow_html=True)
     st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea **incrementar** el presupuesto. </h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E'>1.- Seleccione la Unidad/Dirección en la cual desea <span style='color:#00EF3A'>incrementar </span> el presupuesto. </h5>", unsafe_allow_html=True)
     
     # Obtener las opciones para el segundo selectbox excluyendo la opción seleccionada en el primero    
     opci = odf['Unidad'][odf['Unidad'] != direc]
@@ -645,8 +645,8 @@ if paginas == 3:
         edi = pd.DataFrame(edi['data'])
         edi['TOTAL'] = edi['Codificado'] + edi['Movimiento']
 
-    st.markdown('<hr style="border: 1.5px solid blue; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>8.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
+    st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #00524E; background-color: #FfFFFF;'>3.- Para crear nuevas actividades, seleccione el proyecto, cree el nombre de la partida presupuestaria y especifique el valor a incrementar.</h5>", unsafe_allow_html=True)
     
     with st.expander("🆕  Crear una partida nueva", expanded=False): 
             st.markdown("<p style='text-align: center; background-color: #B5E6FC;'> Agregar nueva partida </p>", unsafe_allow_html=True)
@@ -695,11 +695,11 @@ if paginas == 3:
     
 
     if total_mov2+nuevo_p < 0:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se a restado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#ffcccc; padding:10px; text-align: center;"><h4 style="color:#ff0000;">Se ha restado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
     elif total_mov2+nuevo_p == 0:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se a realizado un incremento en el codificado de {selec}</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">No se ha realizado un incremento en el codificado de {selec}</h3></div>', unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Se a incrementado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="max-width: 600px; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">Se ha incrementado el valor de:  ${total_mov2+nuevo_p:} en {selec}</h3></div>', unsafe_allow_html=True)
 
     #st.markdown("---")
     st.markdown('<hr style="border: 1.5px solid green; margin-bottom: 5px;">', unsafe_allow_html=True)
@@ -723,7 +723,7 @@ if paginas == 3:
         
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #C82905; background-color: #FfFFFF;'>1.- Verifique que los valores totales sean correctos.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #920D00; background-color: #FfFFFF;'>1.- Verifique que los valores totales sean correctos.</h5>", unsafe_allow_html=True)
 
     
 
@@ -734,7 +734,7 @@ if paginas == 3:
         st.markdown(f'<div style="max-width: auto; margin: 0 auto; background-color:#F1FFEF; padding:10px; text-align: center;"><h4 style="color:#008000;">El valor que se disminuyo en {direc} e incremento en {selec} es el mismo.</h3></div>', unsafe_allow_html=True)
 
     st.markdown('<hr style="border: 1.5px solid red; margin-bottom: 5px;">', unsafe_allow_html=True)
-    st.markdown("<h5 style='text-align: left;  color: #C82905; background-color: #FfFFFF;'>2.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='text-align: left;  color: #920D00; background-color: #FfFFFF;'>2.- Descargue el documento PDF para adjuntarlo al memorando de solicitud de reforma.</h5>", unsafe_allow_html=True)
 
     st.info("""
             **Nota:** Recuerde que el memorando de solicitud de reforma debe además contener las justificaciones técnicas y documentación de respaldo.
@@ -1684,3 +1684,5 @@ if paginas == 5:
     else:
         #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
+
+
