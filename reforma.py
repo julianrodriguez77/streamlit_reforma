@@ -1685,4 +1685,3 @@ if paginas == 5:
         #st.markdown('<div style=" margin: 0 auto; background-color:#D9FDFF; padding:10px; text-align: center;"><h4 style="color:#01464A;">Los Movimientos tienen incosistencia revisar para descargar.</h3></div>', unsafe_allow_html=True)
         st.warning('Los Movimientos tienen incosistencia revisar para descargar')    
 
-
